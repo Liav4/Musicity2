@@ -1,0 +1,176 @@
+
+body {
+	margin: 0;
+	background-image: url("deps/img/home.jpg");
+	background-attachment: fixed;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: cover;
+
+}
+
+
+/*===========================================	header 	===========================================*/
+
+*:focus {
+	outline: inherit; 
+}
+
+header h1 {
+	text-align: center;
+	margin-top: -0.4em;
+	font-size: 3em;
+	font-weight: normal;
+	color: white;
+}
+
+input{
+	border-radius: 0.4em;
+}
+
+header {
+	background: linear-gradient(to left,#006699,#4daaca,#006699);
+	padding-bottom: 1em;
+
+	margin: 0;
+}
+
+.logo {
+	width: 12em;
+	height: 4em;
+}
+
+/*===========================================	questions 	===========================================*/
+
+.question{
+	
+	color: #EEEEEE;
+	margin-bottom: 1rem;
+	font-size: 1.4rem;
+	text-align: center;
+	width: 100%;
+	margin-bottom: 10rem;
+}
+
+.bg{
+	background-color: rgba(20,86,110,0.8);
+}
+
+textarea{
+	resize :none;
+}
+
+.form-control {
+	width: 80%;
+	margin: auto;
+}
+
+.show-more-label{
+	background-color: rgba(20,86,110,0.9);
+	cursor: pointer;
+	padding: 0.5rem;
+	border-radius: 0.5em;
+	width: 100%;
+}
+
+.show-more-label:hover{
+	background-color: rgba(20,86,110,1);
+	text-decoration: underline;
+}
+
+.show-answer-checkbox:checked + .form-group{
+	display: block;
+}
+
+.show-answer-button {
+	background-color: rgba(20,86,110,0.9); 
+	cursor: pointer;
+	color: #EEEEEE;
+	width: 100%;
+	border-radius: 0.5em;
+	padding: 0.5rem;
+}
+
+.answer-button {
+	width: inherit;
+	text-align: center;
+}
+
+.show-answer-button:hover {
+	background-color: rgba(20,86,110,1); 
+	text-decoration: underline;
+}
+
+.answers{
+	width: 70%;
+	background-color: rgba(20,86,110,0.8);
+	/*margin: auto;*/
+}
+
+.answers-title{
+	text-align: left;
+	color: rgba(0,50,120,0.9); 
+	text-decoration: underline;
+}
+
+
+.submit-the-answer {
+	margin-top: 1rem;
+	color: #111111;
+
+}
+
+.row{
+	max-width: 100%;
+}
+
+ul li{
+	list-style-type: none;
+}
+
+
+.show-more-checkbox:checked + ul {
+	display: block;
+}
+
+
+.selected{
+	background-color: #2266DD;
+}
+
+button{
+	background-color: transparent;
+}
+
+/*===========================================	utility 	===========================================*/
+
+.u-hide {
+	display: none;
+}
+
+.u-disp-inline-b {
+	display: inline-block;
+}
+
+.u-clear-fix::after {
+	content: '';
+	visibility: hidden;
+	display: block;
+	clear: both;
+}
+
+
+.pagging{
+	width: 30%;
+	margin: auto;
+	text-align: center;
+	color: white;
+	font-weight: 900;
+	//background-color: #2266DD
+}
+
+.pagging button:hover{
+	background-color: #2266DD;
+
+}
+

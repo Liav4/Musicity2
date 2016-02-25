@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="eng" ng-app="topTopics">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Musicity - Top Topics</title>
+
+	<script src="jquery/jquery-1.12.0.min.js"></script>
+	<script src="angularJS/angular.min.js"></script>
+	<script src="browseQByTopics.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="browseQByTopics.css">
+	
+	
+</head>
+<body ng-controller="listTopics">
+	<header>
+		<div>
+			<!-- the logo image of the website -->
+			<img class="logo" src="deps/img/musicity-logo-white.png" alt="Musicity logo">
+			<h1>Top Topics</h1>
+		</div>
+	</header>
+	<!-- Responsive Navbar -->
+
+	<nav role="navigation" class="navbar navbar-default">
+	  <div class="container">
+	    <div class="navbar-header">
+	      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	      <a class="navbar-brand" href="index.html">Musicity</a>
+	    </div>
+	    <div class="navbar-collapse collapse">
+	      <ul class="nav navbar-nav">
+	        <li><a href="welcomePage.html">Home</a></li>
+	        <li><a href="newlySubmittedQ.html">Newly Submitted Questions</a></li>
+	        <li><a href="usersLeaderboard.html">View Users' Leaderboard</a></li>
+	        <li class="active dropdown">
+	          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Browse Questions <span class="caret"></span></a>
+	          <ul class="dropdown-menu">
+	            <li><a href="browseExistingQ.html">Browse Existing Questions</a></li>
+	            <li role="separator" class="divider"></li>
+	            <li class="active"><a href="browseQByTopics.html">Browse Questions By Topics</a></li>
+	          </ul>
+	      </ul>
+	    </div><!--/.nav-collapse -->
+	  </div><!--/.container -->
+	</nav>
+
+
+	<ol class="container tTopics">
+		
+		<li class="row topic" ng-repeat="topic in topTopics" ng-click = "handleTopicClick(topic)" >
+			<div href="topic_{{topic.name}}.html" >
+				<div class="col-md-12">
+					{{topic.name}}
+				</div>
+			<!--  
+				<div class="col-md-12 rating">
+					Rating: {{topic.topicPopularity}}
+				</div>-->
+			</div>
+		</li>
+	
+	</ol>
+	<div class = "pagging" >
+		<button type="button" class="btn" ng-hide = "thisPage == 1"   ng-click="handlePrevPage()">
+			<span class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span>
+		</button>
+		<span>{{thisPage}}</span>
+		<button type="button"  class="btn" ng-hide = "isLastPage == 1" ng-click="handleNextPage()">
+			<span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
+		</button>
+	</div>
+		</button>
+	</div>
+</body>
+</html>

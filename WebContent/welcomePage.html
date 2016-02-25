@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="homeApp">
+	<head>
+		<meta charset="UTF-8">
+		<title>Musicity - Home</title>
+
+		
+		<script src="angularJS/angular.min.js"></script>
+		<script src="welcomePage.js"></script>
+
+		<link rel="stylesheet" type="text/css" href="welcomePage.css">
+	</head>
+	<body ng-controller="getUsername">
+		<header>
+			<div>
+				<!-- the logo image of the website -->
+				<img class="logo" src="deps/img/musicity-logo-white.png" alt="Musicity logo">
+				<h1>What would you like to do?</h1>
+			</div>
+			<span class="hello-user-msg">Hello {{username}},</span>
+		</header>
+		<section class="">
+			<div class="question-form-div">
+				<input  class="u-hide" type="checkbox" id="submit_q">
+				<label class = "u-hide hide-q-btn" for="submit_q">Hide Question</label>
+				<form ng-submit="submitQ()" class="question-form box_t2">
+					<div class="text-area-div">
+						<textarea ng-model="qTopics" placeholder = "#topics e.g. #guitar#pianoLessons (up to 50 characters each, optional)"></textarea>
+					</div>
+					<div class="text-area-div">
+						<textarea ng-model="qText" placeholder = "Your question (up to 300 characters)"></textarea>
+					</div>
+					<div>
+						<input id="submit-the-q"  type="submit" value="submit">	
+					</div>	
+				</form>
+				<label for="submit_q">
+
+						
+						<div class="box_t1">
+							<span>Sumbit a question</span>
+						</div>
+
+				</label>
+				
+
+				<a href="newlySubmittedQ.html">
+					<div class="box_t1">
+						<span>View newly submitted questions</span>
+					</div>
+				</a>
+			</div>
+			<div>
+				<a href="usersLeaderboard.html">
+					<div class="box_t1">
+						<span>view users' leaderboard</span>
+					</div>
+				</a>
+				<input  class="u-hide" type="checkbox" id="browse-opts">
+				<label for = "browse-opts">
+					<div class="box_t1">
+						<span>Browse questions</span>
+					</div>
+				</label>
+				<label class="browse-options box_t1 box_t3" for="browse-opts">
+					<a href="browseExistingQ.html"><div class="first-opt">Browse Existing Questions</div></a>
+					<a href="browseQByTopics.html"><div class="second-opt">Browse Questions By Topics</div></a>
+				</label>
+				
+			</div>			
+		</section>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
