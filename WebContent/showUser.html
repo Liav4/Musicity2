@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="eng" ng-app="userPage"  ng-controller="showUser">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Musicity - {{user.name}}</title>
+
+	<script src="jquery/jquery-1.12.0.min.js"></script>
+	<script src="angularJS/angular.min.js"></script>
+	<script src="showUser.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="browseExistingQ.css">
+	<link rel="stylesheet" type="text/css" href="showUser.css">
+	
+	
+</head>
+<body>
+	<header>
+		<div>
+			<!-- the logo image of the website -->
+			<img class="logo" src="deps/img/musicity-logo-white.png" alt="Musicity logo">
+			<h1>{{user.name}}'s page</h1>
+		</div>
+	</header>
+	<!-- Responsive Navbar -->
+
+	<nav role="navigation" class="navbar navbar-default">
+	  <div class="container">
+	    <div class="navbar-header">
+	      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	      <a class="navbar-brand" href="index.html">Musicity</a>
+	    </div>
+	    <div class="navbar-collapse collapse">
+	      <ul class="nav navbar-nav">
+	        <li><a href="welcomePage.html">Home</a></li>
+	        <li><a href="newlySubmittedQ.html">Newly Submitted Questions</a></li>
+	        <li><a href="usersLeaderboard.html">View Users' Leaderboard</a></li>
+	        <li class="dropdown">
+	          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Browse Questions <span class="caret"></span></a>
+	          <ul class="dropdown-menu">
+	            <li><a href="browseExistingQ.html">Browse Existing Questions</a></li>
+	            <li role="separator" class="divider"></li>
+	            <li ><a href="browseQByTopics.html">Browse Questions By Topics</a></li>
+	          </ul>
+	      </ul>
+	    </div><!--/.nav-collapse -->
+	  </div><!--/.container -->
+	</nav>
+
+
+	<div class="container user">
+		
+		<div class="col-md-4">
+			<a href="https://www.google.com">{{user.nickname}}</a>
+		</div>
+		<div class="col-md-4">
+			Rating: {{user.rating}}
+		</div>
+		<div class="your-profile-picture">
+			<img id="profilePic" src="{{user.image}}">
+		</div>
+		<div class="col-md-12" ng-hide = "user.expertiseProfile.length == 0">
+			Expertise Profile:
+			<span ng-repeat="topic in user.expertiseProfile"> 
+				{{topic.name}}
+			</span>
+		</div>
+
+		<div class="col-md-12" ng-hide = "user.description.length == 0">
+			Short Description:
+			<div>
+				{{user.description}}
+			</div>
+		</div>
+		<div class="col-md-12" ng-show = "user.description.length == 0">
+			{{user.name}} doesn't have a description.
+		</div>
+<div class="divider">================================================================</div>
+
+		last Questions:
+		<ul>
+			<li class="row question" ng-repeat="q in user.lastAskedQuestions">
+				<div class="bg">
+					<div class = "row">
+						<p class = "col-md-12"> 
+							{{q.text}}
+						</p>
+					</div> 
+					<div class = "row"> 
+						<div class = "col-md-4">
+							{{q.timestamp}}
+						</div> 
+						<div class = "col-md-4">
+							Top Topics:
+							<span ng-repeat="topic in q.topics"> {{topic.name}}</span>
+						</div>
+						<div class = "col-md-2">
+							rating:   {{q.rating}}  
+						</div>
+						<div class = "col-md-2">
+							<button type="button" class="btn"  ng-class = "{selected: q.vote > 0}" ng-click="handleLike(q,1)">
+								<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+							</button>
+							<button type="button" class="btn" ng-class = "{selected: q.vote < 0}" ng-click="handleDislike(q,1)" aria-label="Left Align">
+								<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+							</button>
+						</div>
+						<div class = "row">
+						  	<div class = "col-md-2">{{q.authorNickname}}  </div>
+						</div>
+						<div class="container">
+							<label for="answer{{q.id}}" class="answer-button">
+								<label for="show-answer{{q.id}}" class="show-answer-button">
+									Provide an Answer
+								</label>
+							</label>
+							<input  class="u-hide show-answer-checkbox" type="checkbox" id="show-answer{{q.id}}">
+							<form class="form-group u-hide" ng-submit="submitAns(q)">
+								<textarea class="form-control" ng-model="q.providedAns" rows="5" id="answer-text{{q.id}}" placeholder = "Your Answer... (up to 300 characters)"></textarea>
+								<div>
+									<input class="submit-the-answer"  type="submit" value="submit"> 	
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+
+
+					<ul class="answers">
+						<li class="row answer" ng-repeat="ans in q.answers" ng-if="$index == 0" > <!--First answer -->
+							<h2 class="answers-title">Answers:</h2>
+							<div class="row">
+								<p class = "col-md-12"> 
+									{{q.answers[0].text}}
+								</p>
+							</div>
+							<div class = "row"> 
+								<div class = "col-md-4">
+									{{q.answers[0].timestamp}}
+								</div>
+								<div class = "col-md-2">
+									rating:   {{q.answers[0].rating}}  
+								</div>
+								<div class = "col-md-2">
+									<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans,0)">
+										<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+									</button>
+									<button type="button" class="btn" ng-class = "{selected: ans.vote < 0}" ng-click="handleDislike(ans,0)" aria-label="Left Align" ng-click="">
+										<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+									</button>
+								</div>
+							</div>
+							<div class = "row">
+							  	<div class = "col-md-4">{{q.answers[0].authorNickname}}  </div>
+							</div>
+						</li>
+						<li>
+							<input  class="u-hide show-more-checkbox" type="checkbox" id="show-more{{q.id}}">
+
+							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="show-more-label">Show More</label>
+							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="u-hide show-more-label">Show Less</label>
+							<ul class="more-answers u-hide"> <!--other answer -->
+								<li class="row answer" ng-repeat="ans in q.answers" ng-if="$index > 0">
+									<div class="row">
+										<p class = "col-md-12"> 
+											{{ans.text}}
+										</p>
+									</div>
+									<div class = "row"> 
+										<div class = "col-md-4">
+											{{ans.timestamp}}
+										</div> 
+										<div class = "col-md-2">
+											rating:   {{ans.rating}}  
+										</div>
+										<div class = "col-md-2">
+											<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans, 0)">
+												<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn" ng-class = "{selected: ans.vote < 0}" ng-click="handleDislike(ans, 0)" aria-label="Left Align" ng-click="">
+												<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+											</button>
+										</div>
+									</div>
+									<div class = "row">
+									  	<div class = "col-md-4">{{ans.authorNickname}} </div>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				<!--</div>-->
+			</li>
+		</ul>
+		<div class="col-md-12">
+			last Answered questions
+
+			<ul>
+			<li class="row question" ng-repeat="q in user.lastAnsweredQuestions">
+				<div class="bg">
+					<div class = "row">
+						<p class = "col-md-12"> 
+							{{q.text}}
+						</p>
+					</div> 
+					<div class = "row"> 
+						<div class = "col-md-4">
+							{{q.timestamp}}
+						</div> 
+						<div class = "col-md-4">
+							Top Topics:
+							<span ng-repeat="topic in q.topics"> {{topic.name}}</span>
+						</div>
+						<div class = "col-md-2">
+							rating:   {{q.rating}}  
+						</div>
+						<div class = "col-md-2">
+							<button type="button" class="btn"  ng-class = "{selected: q.vote > 0}" ng-click="handleLike(q,1)">
+								<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+							</button>
+							<button type="button" class="btn" ng-class = "{selected: q.vote < 0}" ng-click="handleDislike(q,1)" aria-label="Left Align">
+								<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+							</button>
+						</div>
+						<div class = "row">
+						  	<div class = "col-md-2">{{q.authorNickname}}  </div>
+						</div>
+						<div class="container">
+							<label for="answer{{q.id}}" class="answer-button">
+								<label for="show-answer{{q.id}}" class="show-answer-button">
+									Provide an Answer
+								</label>
+							</label>
+							<input  class="u-hide show-answer-checkbox" type="checkbox" id="show-answer{{q.id}}">
+							<form class="form-group u-hide" ng-submit="submitAns(q)">
+								<textarea class="form-control" ng-model="q.providedAns" rows="5" id="answer-text{{q.id}}" placeholder = "Your Answer... (up to 300 characters)"></textarea>
+								<div>
+									<input class="submit-the-answer"  type="submit" value="submit"> 	
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+
+
+					<ul class="answers">
+						<li class="row answer" ng-repeat="ans in q.answers" ng-if="$index == 0" > <!--First answer -->
+							<h2 class="answers-title">Answers:</h2>
+							<div class="row">
+								<p class = "col-md-12"> 
+									{{q.answers[0].text}}
+								</p>
+							</div>
+							<div class = "row"> 
+								<div class = "col-md-4">
+									{{q.answers[0].timestamp}}
+								</div>
+								<div class = "col-md-2">
+									rating:   {{q.answers[0].rating}}  
+								</div>
+								<div class = "col-md-2">
+									<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans,0)">
+										<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+									</button>
+									<button type="button" class="btn" ng-class = "{selected: ans.vote < 0}" ng-click="handleDislike(ans,0)" aria-label="Left Align" ng-click="">
+										<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+									</button>
+								</div>
+							</div>
+							<div class = "row">
+							  	<div class = "col-md-4">{{q.answers[0].authorNickname}}  </div>
+							</div>
+						</li>
+						<li>
+							<input  class="u-hide show-more-checkbox" type="checkbox" id="show-more{{q.id}}">
+
+							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="show-more-label">Show More</label>
+							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="u-hide show-more-label">Show Less</label>
+							<ul class="more-answers u-hide"> <!--other answer -->
+								<li class="row answer" ng-repeat="ans in q.answers" ng-if="$index > 0">
+									<div class="row">
+										<p class = "col-md-12"> 
+											{{ans.text}}
+										</p>
+									</div>
+									<div class = "row"> 
+										<div class = "col-md-4">
+											{{ans.timestamp}}
+										</div> 
+										<div class = "col-md-2">
+											rating:   {{ans.rating}}  
+										</div>
+										<div class = "col-md-2">
+											<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans, 0)">
+												<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn" ng-class = "{selected: ans.vote < 0}" ng-click="handleDislike(ans, 0)" aria-label="Left Align" ng-click="">
+												<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+											</button>
+										</div>
+									</div>
+									<div class = "row">
+									  	<div class = "col-md-4">{{ans.authorNickname}} </div>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				<!--</div>-->
+			</li>
+		</ul>
+
+		</div>
+		
+
+	
+	</div>
+</body>
+</html>

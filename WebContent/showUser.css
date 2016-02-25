@@ -1,0 +1,102 @@
+body {
+	margin: 0;
+	background-image: url("deps/img/home.jpg");
+	background-attachment: fixed;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+/*===========================================	header 	===========================================*/
+
+*:focus {
+	outline: inherit; 
+}
+
+header h1 {
+	text-align: center;
+	margin-top: -0.4em;
+	font-size: 3em;
+	font-weight: normal;
+	color: white;
+}
+
+input{
+	border-radius: 0.4em;
+}
+
+header {
+	background: linear-gradient(to left,#006699,#4daaca,#006699);
+	padding-bottom: 1em;
+
+	margin: 0;
+}
+
+.logo {
+	width: 12em;
+	height: 4em;
+}
+
+
+
+/*===========================================	board 	===========================================*/
+
+.user {
+	background-color: rgba(20,86,110,0.8);
+	color: #EEEEEE;
+	margin-bottom: 1rem;
+	font-size: 1.4rem;
+	text-align: center;
+	width: 100%;
+	min-height: 100%;
+	font-weight: bold;
+}
+
+.topic:hover {
+	background-color: rgba(20,86,110,0.9);
+	cursor: pointer;
+}
+
+
+.rating {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}
+
+a{
+	color: #EEEEEE;
+}
+
+a:hover,
+a:focus{
+	color: #FFFFFF;
+}
+
+.tTopics {
+	list-style-type: none;
+}
+
+.tTopics li {
+    counter-increment: step-counter;
+}
+
+.tTopics li:before{
+    content: counter(step-counter);
+    font-size: 110%;
+  	background-color: transparent;
+    color: #EEEEEE;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 3px;
+}
+
+
+
+
+.your-profile-picture img
+{
+	width: 50px;
+	height: 50px;
+}
+
+W

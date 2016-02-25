@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="eng" ng-app="usersLeaderboardApp">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Musicity - Users' Leaderboard</title>
+
+	<script src="jquery/jquery-1.12.0.min.js"></script>
+	<script src="angularJS/angular.min.js"></script>
+	<script src="js/controller.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="usersLeaderboard.css">
+	
+	
+</head>
+<body ng-controller="listUser">
+	<header>
+		<div>
+			<!-- the logo image of the website -->
+			<img class="logo" src="deps/img/musicity-logo-white.png" alt="Musicity logo">
+			<h1>Users' Leaderboad</h1>
+		</div>
+	</header>
+	<!-- Responsive Navbar -->
+
+	<nav role="navigation" class="navbar navbar-default">
+	  <div class="container">
+	    <div class="navbar-header">
+	      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	      <a class="navbar-brand" href="index.html">Musicity</a>
+	    </div>
+	    <div class="navbar-collapse collapse">
+	      <ul class="nav navbar-nav">
+	        <li><a href="welcomePage.html">Home</a></li>
+	        <li><a href="newlySubmittedQ.html">Newly Submitted Questions</a></li>
+	        <li class="active"><a href="usersLeaderboard.html">View Users' Leaderboard</a></li>
+	        <li class="dropdown">
+	          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Browse Questions <span class="caret"></span></a>
+	          <ul class="dropdown-menu">
+	            <li><a href="browseExistingQ.html">Browse Existing Questions</a></li>
+	            <li role="separator" class="divider"></li>
+	            <li><a href="browseQByTopics.html">Browse Questions By Topics</a></li>
+	          </ul>
+	      </ul>
+	    </div><!--/.nav-collapse -->
+	  </div><!--/.container -->
+	</nav>
+
+
+	<ol class="container tUsers">
+		<li class="row user" ng-repeat="user in topUsers">
+			<div class="col-md-4"><a ng-click = "showUserSummary(user)">{{user.nickname}}</a></div>
+			<div class="col-md-4">Rating: {{user.rating}}</div>
+			<div class="your-profile-picture">
+				<img id="profilePic" src="{{user.image}}">
+			</div>
+			<div class="col-md-12">
+				Expertise Profile:
+				<span ng-repeat="topic in user.expertiseProfile"> {{topic.name}}</span>
+			</div>
+
+		</li>
+	</ol>
+</body>
+</html>

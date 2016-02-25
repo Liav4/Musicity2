@@ -1,0 +1,155 @@
+body {
+	margin: 0;
+}
+
+/*===========================================	header 	===========================================*/
+
+*:focus {
+	outline: inherit;
+}
+
+header h1 {
+	text-align: center;
+	margin-top: -0.4em;
+	font-size: 3em;
+	font-weight: normal;
+	color: white;
+}
+
+.log-in {
+	margin-left: 22%;
+}
+
+
+/*none displaying the place holder on pc version*/
+#log-in_Username::-webkit-input-placeholder,
+#log-in_Password::-webkit-input-placeholder
+ {
+    visibility: hidden;
+}
+
+#log-in-button {
+	margin-left: 2em;
+}
+
+.log-in label {
+	margin-left: 2em;
+	color: white;
+}
+
+input{
+	border-radius: 0.4em;
+}
+
+#header-div {
+
+}
+
+header {
+	background: linear-gradient(to left,#006699,#4daaca,#006699);
+	padding-bottom: 1em;
+
+	margin: 0;
+}
+
+.logo {
+	width: 12em;
+	height: 4em;
+}
+
+
+
+/*===========================================	Sign-up section 	===========================================*/
+
+.sign-up-title {
+
+}
+
+body {
+	background-color: #F0F0F0;
+
+}
+
+section{
+	padding: 1em;
+	text-align: center;
+}
+
+input{
+	
+}
+
+textarea {
+	resize:none;
+	border-radius: 0.4em;
+	width: 100%;
+	height: 7rem;
+}
+
+
+.input-t1{
+	width: 22%;
+	margin-bottom: 1rem;
+}
+
+
+
+header .error1{
+	text-align: center;
+	margin-left: 27%;
+}
+
+
+.error1{
+	
+	display: inline-block;
+	display: none;
+}
+
+.error1{
+	border: solid red;
+	border-width: 0.2em;
+	width: 40%;
+	background-color: #F76060;
+	margin: auto;
+}
+
+
+.your-profile-picture img
+{
+	width: 50px;
+	height: 50px;
+}
+
+.text-area-div,
+.profile-pic-div {
+	width: 42%;
+}
+
+.profile-pic-div {
+	float: left;
+	position: relative;
+	left: 15%;
+
+}
+
+.profile-pic-div input{
+	width: 40%;
+	margin-top: 1.5rem;
+
+}
+
+
+/*===========================================	footer 	===========================================*/
+
+
+
+/*===========================================	utility 	===========================================*/
+
+.u-hide {
+	display: none;
+}
+
+.u-disp-inline-b {
+	display: inline-block;
+}
