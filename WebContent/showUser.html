@@ -19,25 +19,35 @@
 	
 </head>
 <body>
-	<header>
+<header>
 		<div>
-			<!-- the logo image of the website -->
-			<img class="logo" src="deps/img/musicity-logo-white.png" alt="Musicity logo">
-			<h1>{{user.name}}'s page</h1>
+			<div class = "container-fluid">
+				<!-- the logo image of the website -->
+				<a href = "welcomePage.html" >
+					<img class="logo" src="deps/img/musicity-logo-white.png" alt="Musicity logo"> 
+				</a>
+				<span class="log-out-nav">
+					<ul class="nav navbar-nav navbar-right">
+						<li ng-click="showUserSummary(currentUsername)">
+							<a href="#">
+						    	<img class = "User-picture" alt = "{{currentUserNickname}}'s picture" src = "{{imageURL}}"/>
+						    </a>
+					    </li>
+					    <li ng-click="showUserSummary(currentUsername)"><a href="#">{{currentUserNickname}}</a></li>
+					    <li ng-click = "handleLogOut()"><a href="#"><span class="glyphicon glyphicon-log-out"></span>Log out</a></li>
+					</ul>
+				</span>
+			</div>
+			<div>
+				<h1>{{user.name}}'s page</h1>
+			</div>
 		</div>
+
 	</header>
 	<!-- Responsive Navbar -->
 
 	<nav role="navigation" class="navbar navbar-default">
 	  <div class="container">
-	    <div class="navbar-header">
-	      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-	        <span class="icon-bar"></span>
-	        <span class="icon-bar"></span>
-	        <span class="icon-bar"></span>
-	      </button>
-	      <a class="navbar-brand" href="index.html">Musicity</a>
-	    </div>
 	    <div class="navbar-collapse collapse">
 	      <ul class="nav navbar-nav">
 	        <li><a href="welcomePage.html">Home</a></li>
@@ -58,34 +68,46 @@
 
 	<div class="container user">
 		
-		<div class="col-md-4">
-			<a href="https://www.google.com">{{user.nickname}}</a>
-		</div>
-		<div class="col-md-4">
-			Rating: {{user.rating}}
-		</div>
-		<div class="your-profile-picture">
-			<img id="profilePic" src="{{user.image}}">
-		</div>
-		<div class="col-md-12" ng-hide = "user.expertiseProfile.length == 0">
-			Expertise Profile:
-			<span ng-repeat="topic in user.expertiseProfile"> 
-				{{topic.name}}
-			</span>
-		</div>
+		<div class = "bg container row user-div">
+			<div class="col-md-4">
+				<a ng-click = "showUserSummary(user.name)" class = "userLink">{{user.nickname}}</a>
+			</div>
+			<div class="col-md-4">
+				Rating: {{user.rating}}
+			</div>
+			<div class="your-profile-picture">
+				<img src="{{user.image}}" alt = "{{user.nickname}}'s picture" ng-click = "showUserSummary(user.name)">
+			</div>
+			<div class="col-md-12" ng-hide = "user.expertiseProfile.length == 0">
+				Expertise Profile:
+				<span ng-repeat="topic in user.expertiseProfile" class = "topicLink" ng-click = "handleTopicClick(topic)" > 
+					{{topic.name}}
+				</span>
+			</div>
+			
 
-		<div class="col-md-12" ng-hide = "user.description.length == 0">
-			Short Description:
-			<div>
-				{{user.description}}
+	
+			<div class="col-md-12" ng-hide = "user.description.length == 0">
+				Short Description:
+				<div>
+					{{user.description}}
+				</div>
+			</div>
+			<div class="col-md-12" ng-show = "user.description.length == 0">
+				{{user.name}} doesn't have a description.
 			</div>
 		</div>
-		<div class="col-md-12" ng-show = "user.description.length == 0">
-			{{user.name}} doesn't have a description.
-		</div>
-<div class="divider">================================================================</div>
 
-		last Questions:
+		
+		<p class = "user-message" ng-show = "user.lastAskedQuestions.length == 0" >
+			This user didn't ask any questions
+		</p>
+		
+		<p class = "user-message" ng-show = "user.lastAskedQuestions.length != 0" >
+			Last asked questions:
+		</p>
+			
+
 		<ul>
 			<li class="row question" ng-repeat="q in user.lastAskedQuestions">
 				<div class="bg">
@@ -98,10 +120,15 @@
 						<div class = "col-md-4">
 							{{q.timestamp}}
 						</div> 
-						<div class = "col-md-4">
-							Top Topics:
-							<span ng-repeat="topic in q.topics"> {{topic.name}}</span>
+						<div class = "col-md-4" ng-hide = "q.topics.length == 0" >
+							Topics:
+							<span ng-repeat="topic in q.topics" class = "topicLink" ng-click = "handleTopicClick(topic)"> {{topic.name}}</span>
 						</div>
+	
+						<div class="col-md-4" ng-show = "q.topics.length == 0">
+							** This question has no topics **
+						</div>
+						
 						<div class = "col-md-2">
 							rating:   {{q.rating}}  
 						</div>
@@ -113,8 +140,14 @@
 								<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
 							</button>
 						</div>
+						<!-- error message - self voting-->
+						<div class = "row self-voting-message-div">
+							<p class="col-md-6 error1" ng-show = "( errorCode === 13 ) && ( thisId === q.id ) ">
+								Sorry, you can NOT vote for yourself.
+							</p>
+						</div>
 						<div class = "row">
-						  	<div class = "col-md-2">{{q.authorNickname}}  </div>
+						  	<div class = "col-md-2 userLink" ng-click = "showUserSummary(q.authorUsername)">{{q.authorNickname}}</div>
 						</div>
 						<div class="container">
 							<label for="answer{{q.id}}" class="answer-button">
@@ -149,7 +182,7 @@
 								<div class = "col-md-2">
 									rating:   {{q.answers[0].rating}}  
 								</div>
-								<div class = "col-md-2">
+								<div class = "col-md-4">
 									<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans,0)">
 										<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
 									</button>
@@ -157,15 +190,20 @@
 										<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
 									</button>
 								</div>
+								<div class = "row self-voting-message-div">
+									<p class="col-md-6 error1" ng-show = "( errorCode === 13 ) && ( thisId === ans.id ) ">
+										Sorry, you can NOT vote for yourself.
+									</p>
+								</div>
 							</div>
 							<div class = "row">
-							  	<div class = "col-md-4">{{q.answers[0].authorNickname}}  </div>
+							  	<div class = "col-md-4 userLink" ng-click = "showUserSummary(q.answers[0].authorUsername)">{{q.answers[0].authorNickname}}</div>
 							</div>
 						</li>
 						<li>
 							<input  class="u-hide show-more-checkbox" type="checkbox" id="show-more{{q.id}}">
 
-							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="show-more-label">Show More</label>
+							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="show-more-label">Show More ({{q.answers.length -1}})</label>
 							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="u-hide show-more-label">Show Less</label>
 							<ul class="more-answers u-hide"> <!--other answer -->
 								<li class="row answer" ng-repeat="ans in q.answers" ng-if="$index > 0">
@@ -181,17 +219,22 @@
 										<div class = "col-md-2">
 											rating:   {{ans.rating}}  
 										</div>
-										<div class = "col-md-2">
-											<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans, 0)">
-												<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
-											</button>
-											<button type="button" class="btn" ng-class = "{selected: ans.vote < 0}" ng-click="handleDislike(ans, 0)" aria-label="Left Align" ng-click="">
-												<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
-											</button>
-										</div>
+									<div class = "col-md-4">
+										<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans, 0)">
+											<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+										</button>
+										<button type="button" class="btn" ng-class = "{selected: ans.vote < 0}" ng-click="handleDislike(ans, 0)" aria-label="Left Align" ng-click="">
+											<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+										</button>
+									</div>
+									<div class = "row self-voting-message-div">
+										<p class="col-md-6 error1" ng-show = "( errorCode === 13 ) && ( thisId === ans.id ) ">
+											Sorry, you can NOT vote for yourself.
+										</p>
+									</div>
 									</div>
 									<div class = "row">
-									  	<div class = "col-md-4">{{ans.authorNickname}} </div>
+									  	<div class = "col-md-4 userLink" ng-click = "showUserSummary(ans.authorUsername)">{{ans.authorNickname}} </div>
 									</div>
 								</li>
 							</ul>
@@ -200,8 +243,17 @@
 				<!--</div>-->
 			</li>
 		</ul>
-		<div class="col-md-12">
-			last Answered questions
+		
+		
+		<p class = "user-message" ng-show = "user.lastAnsweredQuestions.length == 0" >
+			This user didn't submit any answers 
+		</p>
+		
+		<p class = "user-message" ng-show = "user.lastAnsweredQuestions.length != 0" >
+			Last answered questions:
+		</p>
+		
+			
 
 			<ul>
 			<li class="row question" ng-repeat="q in user.lastAnsweredQuestions">
@@ -215,10 +267,16 @@
 						<div class = "col-md-4">
 							{{q.timestamp}}
 						</div> 
-						<div class = "col-md-4">
-							Top Topics:
-							<span ng-repeat="topic in q.topics"> {{topic.name}}</span>
+						
+						<div class = "col-md-4" ng-hide = "q.topics.length == 0" >
+							Topics:
+							<span ng-repeat="topic in q.topics" class = "topicLink" ng-click = "handleTopicClick(topic)"> {{topic.name}}</span>
 						</div>
+	
+						<div class="col-md-4" ng-show = "q.topics.length == 0">
+							** This question has no topics **
+						</div>
+						
 						<div class = "col-md-2">
 							rating:   {{q.rating}}  
 						</div>
@@ -230,18 +288,29 @@
 								<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
 							</button>
 						</div>
+						<!-- error message - self voting-->
+						<div class = "row self-voting-message-div">
+							<p class="col-md-6 error1" ng-show = "( errorCode === 13 ) && ( thisId === q.id ) ">
+								Sorry, you can NOT vote for yourself.
+							</p>
+						</div>
+						<div class = "row self-voting-message-div">
+							<p class="col-md-6 error1" ng-show = "( errorCode === 13 ) && ( thisId === ans.id ) ">
+								Sorry, you can NOT vote for yourself.
+							</p>
+						</div>
 						<div class = "row">
-						  	<div class = "col-md-2">{{q.authorNickname}}  </div>
+						  	<div class = "col-md-2 userLink" ng-click = "showUserSummary(q.authorUsername)">{{q.authorNickname}}  </div>
 						</div>
 						<div class="container">
-							<label for="answer{{q.id}}" class="answer-button">
-								<label for="show-answer{{q.id}}" class="show-answer-button">
+							<label for="2_answer{{q.id}}" class="answer-button">
+								<label for="2_show-answer{{q.id}}" class="show-answer-button">
 									Provide an Answer
 								</label>
 							</label>
-							<input  class="u-hide show-answer-checkbox" type="checkbox" id="show-answer{{q.id}}">
+							<input  class="u-hide show-answer-checkbox" type="checkbox" id="2_show-answer{{q.id}}">
 							<form class="form-group u-hide" ng-submit="submitAns(q)">
-								<textarea class="form-control" ng-model="q.providedAns" rows="5" id="answer-text{{q.id}}" placeholder = "Your Answer... (up to 300 characters)"></textarea>
+								<textarea class="form-control" ng-model="q.providedAns" rows="5" id="2_answer-text{{q.id}}" placeholder = "Your Answer... (up to 300 characters)"></textarea>
 								<div>
 									<input class="submit-the-answer"  type="submit" value="submit"> 	
 								</div>
@@ -266,23 +335,28 @@
 								<div class = "col-md-2">
 									rating:   {{q.answers[0].rating}}  
 								</div>
-								<div class = "col-md-2">
-									<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans,0)">
+								<div class = "col-md-4">
+									<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans, 0)">
 										<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
 									</button>
-									<button type="button" class="btn" ng-class = "{selected: ans.vote < 0}" ng-click="handleDislike(ans,0)" aria-label="Left Align" ng-click="">
+									<button type="button" class="btn" ng-class = "{selected: ans.vote < 0}" ng-click="handleDislike(ans, 0)" aria-label="Left Align" ng-click="">
 										<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
 									</button>
 								</div>
+								<div class = "row self-voting-message-div">
+									<p class="col-md-6 error1" ng-show = "( errorCode === 13 ) && ( thisId === ans.id ) ">
+										Sorry, you can NOT vote for yourself.
+									</p>
+								</div>
 							</div>
 							<div class = "row">
-							  	<div class = "col-md-4">{{q.answers[0].authorNickname}}  </div>
+							  	<div class = "col-md-4 userLink" ng-click = "showUserSummary(q.answers[0].authorUsername)">{{q.answers[0].authorNickname}}  </div>
 							</div>
 						</li>
 						<li>
 							<input  class="u-hide show-more-checkbox" type="checkbox" id="show-more{{q.id}}">
 
-							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="show-more-label">Show More</label>
+							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="show-more-label">Show More ({{q.answers.length -1}})</label>
 							<label ng-hide="q.answers.length < 2"  for="show-more{{q.id}}" class="u-hide show-more-label">Show Less</label>
 							<ul class="more-answers u-hide"> <!--other answer -->
 								<li class="row answer" ng-repeat="ans in q.answers" ng-if="$index > 0">
@@ -298,7 +372,7 @@
 										<div class = "col-md-2">
 											rating:   {{ans.rating}}  
 										</div>
-										<div class = "col-md-2">
+										<div class = "col-md-4">
 											<button type="button" class="btn"  ng-class = "{selected: ans.vote > 0}" ng-click="handleLike(ans, 0)">
 												<span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
 											</button>
@@ -306,9 +380,14 @@
 												<span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
 											</button>
 										</div>
+										<div class = "row self-voting-message-div">
+											<p class="col-md-6 error1" ng-show = "( errorCode === 13 ) && ( thisId === ans.id ) ">
+												Sorry, you can NOT vote for yourself.
+											</p>
+										</div>
 									</div>
 									<div class = "row">
-									  	<div class = "col-md-4">{{ans.authorNickname}} </div>
+									  	<div class = "col-md-4 userLink" ng-click = "showUserSummary(ans.authorUsername)">{{ans.authorNickname}} </div>
 									</div>
 								</li>
 							</ul>

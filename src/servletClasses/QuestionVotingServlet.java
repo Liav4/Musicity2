@@ -13,12 +13,24 @@ import jsonClasses.Vote;
 import main.*;
 
 /**
- * Servlet implementation class QuestionVotingServlet
+ * The Question Voting Servlet provides an API to handle a question voting in
+ * the website.
+ * 
+ * 
+ * @author LIAV
+ * @since 2016-02-26
+ * @see main.DatabaseInteractor
+ * @see main.StringConstants
+ * @see main.MusicityServlet
  */
 public class QuestionVotingServlet extends MusicityServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Provides support for a GET request - sending the parameters to the super
+	 * class.
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -26,27 +38,32 @@ public class QuestionVotingServlet extends MusicityServlet {
 
 	}
 
+	/**
+	 * Provides support for a POST request.
+	 * 
+	 * @param request
+	 *            The request to the server.
+	 * @param response
+	 *            The response from the server.
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 
 		// declaring the connection and the statement objects to use
 		Connection connection = null;
 		Statement statement = null;
 
-		System.out.println("entering question voting servlet");
-
 		// getting the vote to add
 
-		String jsonVoteString = getRequestData(request);
+		Vote voteToAdd = (Vote) fromJson(getRequestData(request), Vote.class);
 
-		Vote voteToAdd = (Vote) fromJson(jsonVoteString, Vote.class);
-
-		// getting the user name from his cookies
+		// getting the user name from the request session
 
 		String username = getUsernameFromSession(request);
 
 		if (username == null) {
 
-			ClientInteractor.sendStatus(response, 1);
+			// if the session is not valid - return a relevant status
+			ClientInteractor.sendStatus(response, 2);
 
 			return;
 
@@ -59,12 +76,13 @@ public class QuestionVotingServlet extends MusicityServlet {
 			statement = connection.createStatement();
 
 			// if the users tries to vote for his question, he will fail
-			String authorNickname = DatabaseInteractor.getColumnFromKey(StringConstants.AUTHOR, StringConstants.ID,
+			String authorUsername = DatabaseInteractor.getColumnFromKey(StringConstants.AUTHOR, StringConstants.ID,
 					voteToAdd.getId(), StringConstants.QUESTIONS_TABLE, statement);
 
-			if (authorNickname.equals(username)) {
+			if (authorUsername.equals(username)) {
 
-				ClientInteractor.sendStatus(response, 2);
+				// sending a failure status
+				ClientInteractor.sendStatus(response, 1);
 
 				return;
 
@@ -73,7 +91,7 @@ public class QuestionVotingServlet extends MusicityServlet {
 			// getting the before and after vote scores
 			int afterVotingScore = voteToAdd.getVote();
 			int beforeVotingScore = !DatabaseInteractor.doesExistIn(StringConstants.USER_QUESTION_VOTES_TABLE,
-					StringConstants.QUESTION_ID, voteToAdd.getId(), StringConstants.USERNAME, username, statement)
+					StringConstants.USERNAME, username, StringConstants.QUESTION_ID, voteToAdd.getId(), statement)
 							? 0
 							: Integer.parseInt(DatabaseInteractor.getColumnFromPair(StringConstants.VOTE,
 									StringConstants.USERNAME, username, StringConstants.QUESTION_ID, voteToAdd.getId(),
@@ -102,6 +120,7 @@ public class QuestionVotingServlet extends MusicityServlet {
 						voteToAdd.getVote(), statement);
 			}
 
+			// sending a success status
 			ClientInteractor.sendStatus(response, 0);
 
 		} // handling the exceptions

@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,17 +17,41 @@ import jsonClasses.Question;
 import jsonClasses.Topic;
 import jsonClasses.User;
 
-// a class which interacts with the database
-// throughout the servlet lifetime
+/**
+ * The DatabaseInteractor class provides an API for interacting with the APACHE
+ * DERBY database. Many create table methods, inserting data methods, querying
+ * methods and updating methods are provided in this API. This class is used by
+ * the servlets of this project to update the database in doPost methods, or
+ * query it in doGet methods. This class deeply depends on the constant strings
+ * defined in the {@link StringConstants} class.
+ * 
+ * @author LIAV
+ * @since 2016-02-26
+ * @see StringConstants
+ *
+ */
 public class DatabaseInteractor {
 
-	// a hash map that gets the key column string from the table string
+	/**
+	 * A hash map object provides a way to get the name of a key column in a
+	 * table through the table name.
+	 */
 	private static HashMap<String, String> keyColumnFinder = null;
 
-	// a method to get a connection with our apache derby database
+	/**
+	 * Supplies a connection with the APACHE DERBY database.
+	 * 
+	 * @return A connection object to the APACHE DERBY database.
+	 * @throws SQLException
+	 *             If fails to establish connection to the APACHE DERBY
+	 *             database.
+	 * @throws ClassNotFoundException
+	 *             If fails to locate the class path of the derby driver.
+	 */
 	public static Connection getConnection() throws SQLException, ClassNotFoundException {
 
-		// initializing the key column finder hash map
+		// initializing the key column finder hash map, if it hasn't yet
+		// been initialized
 		if (keyColumnFinder == null) {
 			keyColumnFinder = new HashMap<String, String>();
 			keyColumnFinder.put(StringConstants.USERS_TABLE, StringConstants.USERNAME);
@@ -35,7 +60,7 @@ public class DatabaseInteractor {
 			keyColumnFinder.put(StringConstants.TOPICS_TABLE, StringConstants.TOPIC_NAME);
 		}
 
-		// creating the URL string object for the database
+		// setting the URL string object for the database
 		String databaseURL = StringConstants.DERBY_GET_DATABASE;
 
 		// creating the object which connects to the database
@@ -52,76 +77,90 @@ public class DatabaseInteractor {
 
 	}
 
+	/**
+	 * Shuts down the database.
+	 * 
+	 * @throws SQLException
+	 *             If fails to establish connection to the database.
+	 */
 	public static void shutDownDatabase() throws SQLException {
 
 		DriverManager.getConnection(StringConstants.DERBY_SHUT_DOWN);
 
 	}
 
-	// a method for creating a table
-	public static void createTable(String table, Statement statement) throws ClassNotFoundException, SQLException {
+	/**
+	 * Creates a table in the database.
+	 * 
+	 * @param table
+	 *            The table name.
+	 * @param statement
+	 *            A statement object to execute the update.
+	 * @throws SQLException
+	 *             If fails to create the table.
+	 */
+	public static void createTable(String table, Statement statement) throws SQLException {
 
 		// getting the SQL command from the table name
+
 		String sqlCommand;
 
 		switch (table) {
 
-		case StringConstants.USERS_TABLE: // setting a command to create a users
-											// table
+		case StringConstants.USERS_TABLE:
+
+			// setting a command to create the users table
 
 			sqlCommand = StringConstants.CREATE_USERS_TABLE;
 
 			break;
 
-		case StringConstants.QUESTIONS_TABLE: // setting a command to create a
-												// questions table
+		case StringConstants.QUESTIONS_TABLE:
+
+			// setting a command to create the questions table
 
 			sqlCommand = StringConstants.CREATE_QUESTIONS_TABLE;
 
 			break;
 
-		case StringConstants.ANSWERS_TABLE: // setting a command to create an
-											// answers table
+		case StringConstants.ANSWERS_TABLE:
+
+			// setting a command to create the answers table
 
 			sqlCommand = StringConstants.CREATE_ANSWERS_TABLE;
 
 			break;
 
-		case StringConstants.TOPICS_TABLE: // setting a command to create a
-											// topics table
+		case StringConstants.TOPICS_TABLE:
+
+			// setting a command to create the topics table
 
 			sqlCommand = StringConstants.CREATE_TOPICS_TABLE;
 
 			break;
 
-		case StringConstants.USER_QUESTION_VOTES_TABLE: // setting a command to
-														// create a user
-														// question
-			// votes table
-			// where each question vote is kept with the
-			// user and
-			// the question
+		case StringConstants.USER_QUESTION_VOTES_TABLE:
+
+			// setting a command to create the user question votes table
+			// where each question vote is kept with the user and the question
 
 			sqlCommand = StringConstants.CREATE_USER_QUESTION_VOTES_TABLE;
 
 			break;
 
-		case StringConstants.USER_ANSWER_VOTES_TABLE: // setting a command to
-														// create a user answer
-			// votes table
-			// where each answer vote is kept with the user
-			// and the answer
+		case StringConstants.USER_ANSWER_VOTES_TABLE:
+
+			// setting a command to create the user answer votes table
+			// where each answer vote is kept with the user and the answer
 
 			sqlCommand = StringConstants.CREATE_USER_ANSWER_VOTES_TABLE;
 
 			break;
 
-		case StringConstants.USER_TOPIC_RANKS_TABLE: // setting a command to
-														// create a user topic
-														// ranks
-			// table
-			// where each triple of user, topic and it's
-			// rank is kept
+		case StringConstants.USER_TOPIC_RANKS_TABLE:
+
+			// setting a command to create a user topic ranks table
+			// where each triple of user, topic and it's rank is kept
 
 			sqlCommand = StringConstants.CREATE_USER_TOPIC_RANKS_TABLE;
 
@@ -132,20 +171,13 @@ public class DatabaseInteractor {
 
 		}
 
-		// creating the table and closing the resources
+		// creating the table
 		try {
-
-			// trying to create the table
-			System.out.println(sqlCommand);
 
 			statement.executeUpdate(sqlCommand);
 
-			System.out.println("created table: " + table);
-
 		} // handling the exceptions
 		catch (SQLException exception) {
-
-			System.out.println(exception.getMessage());
 
 			// getting the error code
 			int errorCode = exception.getErrorCode();
@@ -159,10 +191,22 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method to insert a user to the users table
-	public static void insertInto(String table, Connection connection, String... args)
-			throws ClassNotFoundException, SQLException {
+	/**
+	 * Inserts data to the database.
+	 * 
+	 * @param table
+	 *            The table name.
+	 * @param connection
+	 *            A connection object to get a prepared statement object from,
+	 *            to update the database.
+	 * @param args
+	 *            Arguments for the insertion. (e.g. user name, questionId...)
+	 * @throws SQLException
+	 *             If fails to insert the record to the table.
+	 */
+	public static void insertInto(String table, Connection connection, String... args) throws SQLException {
 
+		// getting a prepared statement object to update the database with
 		PreparedStatement preparedStatement = null;
 
 		// getting the SQL command from the table name
@@ -178,7 +222,7 @@ public class DatabaseInteractor {
 			// preparing a statement
 			preparedStatement = connection.prepareStatement(sqlCommand);
 
-			// inserting the arguments to the statement
+			// setting the arguments to the statement
 			for (int i = 1; i <= 5; i++)
 				preparedStatement.setString(i, args[i - 1]);
 
@@ -192,7 +236,7 @@ public class DatabaseInteractor {
 			// preparing a statement
 			preparedStatement = connection.prepareStatement(sqlCommand);
 
-			// inserting arguments to the statement
+			// setting the arguments to the statement
 			for (int i = 0; i < 4; i++)
 				preparedStatement.setString(i + 1, args[i]);
 
@@ -206,7 +250,7 @@ public class DatabaseInteractor {
 			// preparing a statement
 			preparedStatement = connection.prepareStatement(sqlCommand);
 
-			// inserting arguments to the statement
+			// setting the arguments to the statement
 			preparedStatement.setInt(1, Integer.parseInt(args[0]));
 			preparedStatement.setString(2, args[1]);
 			preparedStatement.setString(3, args[2]);
@@ -222,7 +266,7 @@ public class DatabaseInteractor {
 			// preparing a statement
 			preparedStatement = connection.prepareStatement(sqlCommand);
 
-			// inserting arguments to the statement
+			// setting the arguments to the statement
 			preparedStatement.setString(1, args[0]);
 
 			break;
@@ -236,7 +280,7 @@ public class DatabaseInteractor {
 			// preparing a statement
 			preparedStatement = connection.prepareStatement(sqlCommand);
 
-			// inserting arguments to the statement
+			// setting the arguments to the statement
 			preparedStatement.setString(1, args[0]);
 			preparedStatement.setInt(2, Integer.parseInt(args[1]));
 			preparedStatement.setInt(3, Integer.parseInt(args[2]));
@@ -252,7 +296,7 @@ public class DatabaseInteractor {
 			// preparing a statement
 			preparedStatement = connection.prepareStatement(sqlCommand);
 
-			// inserting arguments to the statement
+			// setting the arguments to the statement
 			preparedStatement.setString(1, args[0]);
 			preparedStatement.setInt(2, Integer.parseInt(args[1]));
 			preparedStatement.setInt(3, Integer.parseInt(args[2]));
@@ -268,7 +312,7 @@ public class DatabaseInteractor {
 			// preparing a statement
 			preparedStatement = connection.prepareStatement(sqlCommand);
 
-			// inserting arguments to the statement
+			// setting the arguments to the statement
 			preparedStatement.setString(1, args[0]);
 			preparedStatement.setString(2, args[1]);
 
@@ -279,194 +323,401 @@ public class DatabaseInteractor {
 
 		}
 
-		// executing the command and closing the resources
+		// executing the command and closing the prepared statement object
 		preparedStatement.executeUpdate();
 		preparedStatement.close();
 
 	}
 
-	// a method to delete a record from the database
-	public static void deleteRecord(String table, String key, Statement statement)
-			throws SQLException, ClassNotFoundException {
+	/**
+	 * Overloaded method. Deletes a record with a string type key from the
+	 * database.
+	 * 
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param key
+	 *            The value of the primary key column of this record.
+	 * @param statement
+	 *            A statement object to delete from the database.
+	 * @throws SQLException
+	 *             If fails to delete the record from the database.
+	 */
+	public static void deleteRecord(String table, String key, Statement statement) throws SQLException {
 
-		// getting the key column
+		// getting the column name of the key in this table
 		String keyColumn = keyColumnFinder.get(table);
 
-		// updating the database
+		// deleting the record
 		statement.executeUpdate(String.format("DELETE FROM %s WHERE %s='%s'", table, keyColumn, key));
 
 	}
 
-	// a method to delete a record from the database
-	public static void deleteRecord(String table, Integer key, Statement statement)
-			throws SQLException, ClassNotFoundException {
+	/**
+	 * Overloaded method. Deletes a record with an integer type key from the
+	 * database.
+	 * 
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param key
+	 *            The value of the primary key column of this record.
+	 * @param statement
+	 *            A statement object to delete from the database.
+	 * @throws SQLException
+	 *             If fails to delete the record from the database.
+	 */
+	public static void deleteRecord(String table, Integer key, Statement statement) throws SQLException {
 
-		// getting the key column
+		// getting the column name of the key in this table
 		String keyColumn = keyColumnFinder.get(table);
 
-		// updating the database
+		// deleting the record
 		statement.executeUpdate(String.format("DELETE FROM %s WHERE %s=%s", table, keyColumn, key));
 
 	}
 
-	// a method to delete a record from the database with two uniquely
-	// identifying keys
+	/**
+	 * Overloaded method. Deletes a record, which is uniquely identified by two
+	 * string type keys, from the database.
+	 * 
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The value of the second key of this record
+	 * @param statement
+	 *            A statement object to delete from the database.
+	 * @throws SQLException
+	 *             If fails to delete the record from the database.
+	 */
 	public static void deleteRecord(String table, String firstKeyColumn, String firstKey, String secondKeyColumn,
-			String secondKey, Statement statement) throws SQLException, ClassNotFoundException {
+			String secondKey, Statement statement) throws SQLException {
 
-		// updating the database
+		// deleting the record
 		statement.executeUpdate(String.format("DELETE FROM %s WHERE %s='%s' AND %s='%s'", table, firstKeyColumn,
 				firstKey, secondKeyColumn, secondKey));
 
 	}
 
-	// a method to delete a record from the database with two uniquely
-	// identifying keys
+	/**
+	 * Overloaded method. Deletes a record, which is uniquely identified by one
+	 * string type key and one integer type key, from the database.
+	 * 
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The value of the second key of this record
+	 * @param statement
+	 *            A statement object to delete from the database.
+	 * @throws SQLException
+	 *             If fails to delete the record from the database.
+	 * 
+	 */
 	public static void deleteRecord(String table, String firstKeyColumn, String firstKey, String secondKeyColumn,
-			Integer secondKey, Statement statement) throws SQLException, ClassNotFoundException {
+			Integer secondKey, Statement statement) throws SQLException {
 
-		// updating the database
+		// deleting the record
 		statement.executeUpdate(String.format("DELETE FROM %s WHERE %s='%s' AND %s=%s", table, firstKeyColumn, firstKey,
 				secondKeyColumn, secondKey));
 
 	}
 
-	// a method to delete a record from the database with two uniquely
-	// identifying keys
+	/**
+	 * Overloaded method. Deletes a record, which is uniquely identified by two
+	 * integer type keys, from the database.
+	 * 
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The value of the second key of this record
+	 * @param statement
+	 *            A statement object to delete from the database.
+	 * @throws SQLException
+	 *             If fails to delete the record from the database.
+	 */
 	public static void deleteRecord(String table, String firstKeyColumn, Integer firstKey, String secondKeyColumn,
-			String secondKey, Statement statement) throws SQLException, ClassNotFoundException {
+			Integer secondKey, Statement statement) throws SQLException {
 
-		// updating the database
+		// deleting the record
 		statement.executeUpdate(String.format("DELETE FROM %s WHERE %s=%s AND %s=%s", table, firstKeyColumn, firstKey,
 				secondKeyColumn, secondKey));
 
 	}
 
-	// a method to delete a record from the database with two uniquely
-	// identifying keys
-	public static void deleteRecord(String table, String firstKeyColumn, Integer firstKey, String secondKeyColumn,
-			Integer secondKey, Statement statement) throws SQLException, ClassNotFoundException {
-
-		// updating the database
-		statement.executeUpdate(String.format("DELETE FROM %s WHERE %s=%s AND %s=%s", table, firstKeyColumn, firstKey,
-				secondKeyColumn, secondKey));
-
-	}
-
-	// a method for updating a table in the database
+	/**
+	 * Overloaded method. Updates a string type value in a record, which is
+	 * identified by a string type key, in the database.
+	 * 
+	 * @param key
+	 *            The key value of this record.
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param column
+	 *            The name of the column that the method updates in this record.
+	 * @param newValue
+	 *            The new value that is stored in this record.
+	 * @param statement
+	 *            A statement object to update the table.
+	 * @throws SQLException
+	 *             If fails to delete the record from the database.
+	 */
 	public static void updateDatabase(String key, String table, String column, String newValue, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
-		// getting the key column
+		// getting the name of the column of this table's key column
 		String keyColumn = keyColumnFinder.get(table);
 
-		// updating the database
+		// updating the record
 		statement.executeUpdate(
 				String.format("UPDATE %s SET %s='%s' WHERE %s='%s'", table, column, newValue, keyColumn, key));
 
 	}
 
-	// a method for updating a table in the database
+	/**
+	 * Overloaded method. Updates an integer type value in a record, which is
+	 * identified by a string type key, in the database.
+	 * 
+	 * @param key
+	 *            The key value of this record.
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param column
+	 *            The name of the column that the method updates in this record.
+	 * @param newValue
+	 *            The new value that is stored in this record.
+	 * @param statement
+	 *            A statement object to update the table.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void updateDatabase(String key, String table, String column, Integer newValue, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
-		System.out.println("column = " + column);
-
-		// getting the key column
+		// getting the name of the column of this table's key column
 		String keyColumn = keyColumnFinder.get(table);
 
-		// updating the database
+		// updating the record
 		statement.executeUpdate(
 				String.format("UPDATE %s SET %s=%s WHERE %s='%s'", table, column, newValue, keyColumn, key));
 
 	}
 
-	// a method for updating a table in the database
+	/**
+	 * Overloaded method. Updates a double type value in a record, which is
+	 * identified by a string type key, in the database.
+	 * 
+	 * @param key
+	 *            The key value of this record.
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param column
+	 *            The name of the column that the method updates in this record.
+	 * @param newValue
+	 *            The new value that is stored in this record.
+	 * @param statement
+	 *            A statement object to update the table.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void updateDatabase(String key, String table, String column, Double newValue, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
-		System.out.println("column is " + column);
-
-		// getting the key column
+		// getting the name of the column of this table's key column
 		String keyColumn = keyColumnFinder.get(table);
 
-		// updating the database
+		// updating the record
 		statement.executeUpdate(
 				String.format("UPDATE %s SET %s=%s WHERE %s='%s'", table, column, newValue, keyColumn, key));
 
 	}
 
-	// a method for updating a table in the database
+	/**
+	 * Overloaded method. Updates a string type value in a record, which is
+	 * identified by an integer type key, in the database.
+	 * 
+	 * @param key
+	 *            The key value of this record.
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param column
+	 *            The name of the column that the method updates in this record.
+	 * @param newValue
+	 *            The new value that is stored in this record.
+	 * @param statement
+	 *            A statement object to update the table.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void updateDatabase(Integer key, String table, String column, String newValue, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
-		// getting the key column
+		// getting the name of the column of this table's key column
 		String keyColumn = keyColumnFinder.get(table);
 
-		// updating the database
+		// updating the record
 		statement.executeUpdate(
 				String.format("UPDATE %s SET %s='%s' WHERE %s=%s", table, column, newValue, keyColumn, key));
 
 	}
 
-	// a method for updating a table in the database
+	/**
+	 * Overloaded method. Updates an integer type value in a record, which is
+	 * identified by an integer type key, in the database.
+	 * 
+	 * @param key
+	 *            The key value of this record.
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param column
+	 *            The name of the column that the method updates in this record.
+	 * @param newValue
+	 *            The new value that is stored in this record.
+	 * @param statement
+	 *            A statement object to update the table.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void updateDatabase(Integer key, String table, String column, Integer newValue, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
-		// getting the key column
+		// getting the name of the column of this table's key column
 		String keyColumn = keyColumnFinder.get(table);
 
-		// updating the database
+		// updating the record
 		statement.executeUpdate(
 				String.format("UPDATE %s SET %s=%s WHERE %s=%s", table, column, newValue, keyColumn, key));
 
 	}
 
-	// a method for updating a table in the database
+	/**
+	 * Overloaded method. Updates a double type value in a record, which is
+	 * identified by an integer type key, in the database.
+	 * 
+	 * @param key
+	 *            The key value of this record.
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param column
+	 *            The name of the column that the method updates in this record.
+	 * @param newValue
+	 *            The new value that is stored in this record.
+	 * @param statement
+	 *            A statement object to update the table.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void updateDatabase(Integer key, String table, String column, Double newValue, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
-		// getting the key column
+		// getting the name of the column of this table's key column
 		String keyColumn = keyColumnFinder.get(table);
 
-		// updating the database
+		// updating the record
 		statement.executeUpdate(
 				String.format("UPDATE %s SET %s=%s WHERE %s=%s", table, column, newValue, keyColumn, key));
 
 	}
 
-	// a method for updating a table in the database
+	/**
+	 * Overloaded method. Updates an integer type value in a record, which is
+	 * identified by two string type keys, in the database.
+	 * 
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The value of the second key of this record.
+	 * @param column
+	 *            The name of the column that is updated in this record.
+	 * @param newValue
+	 *            The new value that is stored in this record.
+	 * @param statement
+	 *            A statement object to update the table.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void updateDatabase(String table, String firstKeyColumn, String firstKey, String secondKeyColumn,
-			String secondKey, String column, Integer newValue, Statement statement)
-					throws ClassNotFoundException, SQLException {
+			String secondKey, String column, Integer newValue, Statement statement) throws SQLException {
 
-		// updating the database
+		// updating the record
 		statement.executeUpdate(String.format("UPDATE %s SET %s=%s WHERE %s='%s' AND %s='%s'", table, column, newValue,
 				firstKeyColumn, firstKey, secondKeyColumn, secondKey));
 
 	}
 
-	// a method for updating a table in the database
+	/**
+	 * Overloaded method. Updates an integer type value in a record, which is
+	 * identified by a string type key and an integer type key, in the database.
+	 * 
+	 * @param table
+	 *            The table name which the record is in.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The value of the second key of this record.
+	 * @param column
+	 *            The name of the column that is updated in this record.
+	 * @param newValue
+	 *            The new value that is stored in this record.
+	 * @param statement
+	 *            A statement object to update the table.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void updateDatabase(String table, String firstKeyColumn, String firstKey, String secondKeyColumn,
-			Integer secondKey, String column, Integer newValue, Statement statement)
-					throws ClassNotFoundException, SQLException {
+			Integer secondKey, String column, Integer newValue, Statement statement) throws SQLException {
 
-		// updating the database
+		// updating the record
 		statement.executeUpdate(String.format("UPDATE %s SET %s=%s WHERE %s='%s' AND %s=%s", table, column, newValue,
 				firstKeyColumn, firstKey, secondKeyColumn, secondKey));
 
 	}
 
-	// a method for getting a record from the database by its key - one column,
-	// string key
+	/**
+	 * An overloaded method. Returns a record, which is identified by a string
+	 * type key, from the database.
+	 * 
+	 * @param table
+	 *            The name of the table that record is in.
+	 * @param keyColumn
+	 *            The name of the key column of this table.
+	 * @param key
+	 *            The value of this record's key.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A ResultSet object containing this record.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	private static ResultSet getRecordFromKey(String table, String keyColumn, String key, Statement statement)
-			throws SQLException, ClassNotFoundException {
+			throws SQLException {
 
-		System.out.println("\n\nkey = " + key);
-		System.out.println("table = " + table);
-		System.out.println("key column = " + keyColumn);
-
-		// getting the result from the parameters
+		// getting the record from the parameters
 		ResultSet record = statement.executeQuery(
 				String.format("SELECT %s FROM %s WHERE %s='%s'", StringConstants.ALL, table, keyColumn, key));
 
@@ -475,12 +726,26 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting a record from the database by its key - one column,
-	// integer key
+	/**
+	 * An overloaded method. Returns a record, which is identified by an integer
+	 * type key, from the database.
+	 * 
+	 * @param table
+	 *            The name of the table that record is in.
+	 * @param keyColumn
+	 *            The name of the key column of this table.
+	 * @param key
+	 *            The value of this record's key.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A ResultSet object containing this record.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	private static ResultSet getRecordFromKey(String table, String keyColumn, Integer key, Statement statement)
-			throws SQLException, ClassNotFoundException {
+			throws SQLException {
 
-		// getting the result from the parameters
+		// getting the record from the parameters
 		ResultSet record = statement.executeQuery(
 				String.format("SELECT %s FROM %s WHERE %s=%s", StringConstants.ALL, table, keyColumn, key));
 
@@ -489,12 +754,30 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting a record from the database by its key - two columns,
-	// first key is a string, second key is a string
+	/**
+	 * An overloaded method. Returns a record, which is uniquely identified by
+	 * two string type keys, from the database.
+	 * 
+	 * @param table
+	 *            The name of the table that record is in.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The value of the second key of this record.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A ResultSet object containing this record.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	private static ResultSet getRecordFromPair(String table, String firstKeyColumn, String firstKey,
-			String secondKeyColumn, String secondKey, Statement statement) throws SQLException, ClassNotFoundException {
+			String secondKeyColumn, String secondKey, Statement statement) throws SQLException {
 
-		// getting the result from the parameters
+		// getting the record from the parameters
 		ResultSet record = statement.executeQuery(String.format("SELECT %s FROM %s WHERE %s='%s' AND %s='%s'",
 				StringConstants.ALL, table, firstKeyColumn, firstKey, secondKeyColumn, secondKey));
 
@@ -503,13 +786,30 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting a record from the database by its key - two columns,
-	// first key is a string, second key is an integer
+	/**
+	 * An overloaded method. Returns a record, which is uniquely identified by a
+	 * string type key and an integer type key, from the database.
+	 * 
+	 * @param table
+	 *            The name of the table that record is in.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The value of the second key of this record.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A ResultSet object containing this record.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	private static ResultSet getRecordFromPair(String table, String firstKeyColumn, String firstKey,
-			String secondKeyColumn, Integer secondKey, Statement statement)
-					throws SQLException, ClassNotFoundException {
+			String secondKeyColumn, Integer secondKey, Statement statement) throws SQLException {
 
-		// getting the result from the parameters
+		// getting the record from the parameters
 		ResultSet record = statement.executeQuery(String.format("SELECT %s FROM %s WHERE %s='%s' AND %s=%s",
 				StringConstants.ALL, table, firstKeyColumn, firstKey, secondKeyColumn, secondKey));
 
@@ -518,27 +818,30 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting a record from the database by its key - two columns,
-	// first key is an integer, second key is a string
+	/**
+	 * An overloaded method. Returns a record, which is uniquely identified by
+	 * two integer type keys, from the database.
+	 * 
+	 * @param table
+	 *            The name of the table that record is in.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The value of the second key of this record.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A ResultSet object containing this record.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	private static ResultSet getRecordFromPair(String table, String firstKeyColumn, Integer firstKey,
-			String secondKeyColumn, String secondKey, Statement statement) throws SQLException, ClassNotFoundException {
+			String secondKeyColumn, Integer secondKey, Statement statement) throws SQLException {
 
-		// getting the result from the parameters
-		ResultSet record = statement.executeQuery(String.format("SELECT %s FROM %s WHERE %s=%s AND %s='%s'",
-				StringConstants.ALL, table, firstKeyColumn, firstKey, secondKeyColumn, secondKey));
-
-		// returning the record
-		return record;
-
-	}
-
-	// a method for getting a record from the database by its key - two columns,
-	// first key is an integer, second key is an integer
-	private static ResultSet getRecordFromPair(String table, String firstKeyColumn, Integer firstKey,
-			String secondKeyColumn, Integer secondKey, Statement statement)
-					throws SQLException, ClassNotFoundException {
-
-		// getting the result from the parameters
+		// getting the record from the parameters
 		ResultSet record = statement.executeQuery(String.format("SELECT %s FROM %s WHERE %s=%s AND %s=%s",
 				StringConstants.ALL, table, firstKeyColumn, firstKey, secondKeyColumn, secondKey));
 
@@ -547,9 +850,18 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method to update the user rating
-	private static void updateUserRating(String username, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+	/**
+	 * Updates the user rating column, which is calculated by the project
+	 * formula.
+	 * 
+	 * @param username
+	 *            The name of the user which is updates.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	private static void updateUserRating(String username, Statement statement) throws SQLException {
 
 		// update the user rating
 		updateDatabase(username, StringConstants.USERS_TABLE, StringConstants.RATING,
@@ -557,9 +869,18 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method to update the question rating
-	private static void updateQuestionRating(int questionId, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+	/**
+	 * Updates a question rating column, which is calculated by the project
+	 * formula.
+	 * 
+	 * @param questionId
+	 *            The id of the question which is updated.
+	 * @param statement
+	 *            A statement object which is used to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	private static void updateQuestionRating(int questionId, Statement statement) throws SQLException {
 
 		// updating the question rating
 		updateDatabase(questionId, StringConstants.QUESTIONS_TABLE, StringConstants.RATING,
@@ -567,28 +888,38 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method to compute the question rating
-	private static double computeQuestionRating(int questionId, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+	/**
+	 * Computes the question rating, which is calculated by the project formula.
+	 * 
+	 * @param questionId
+	 *            The id of the question that its rating is calculated.
+	 * @param statement
+	 *            A statement object used to query the database.
+	 * @return The question rating.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
+	private static double computeQuestionRating(int questionId, Statement statement) throws SQLException {
 
 		// getting the question voting score
 		int questionVotingScore = Integer.parseInt(getColumnFromKey(StringConstants.QUESTION_VOTING_SCORE,
 				StringConstants.ID, questionId, StringConstants.QUESTIONS_TABLE, statement));
 
-		// getting the number of answers
+		// getting the number of answers which were submitted to this question
 		int numberOfAnswers = Integer.parseInt(getColumnFromKey(StringConstants.QUESTION_ANSWERS_NUMBER,
 				StringConstants.ID, questionId, StringConstants.QUESTIONS_TABLE, statement));
 
-		// getting the question rating sum of the question answers
+		// getting the sum of rating of answers which were submitted to this
+		// question
 		int answersRatingSum = Integer.parseInt(getColumnFromKey(StringConstants.QUESTION_ANSWERS_RATING_SUM,
 				StringConstants.ID, questionId, StringConstants.QUESTIONS_TABLE, statement));
 
-		// calculating the user rating via the project formula
+		// calculating the question rating via the project formula
 
 		/*
 		 * here we make an assumption: if the question doesn't have any answers,
-		 * then the amount that is added to the question rating for answers will
-		 * be zero
+		 * then the amount that is added to the question rating because of
+		 * answers will be zero
 		 */
 
 		double amountToAddForAnswers = numberOfAnswers == 0 ? 0 : (0.8 * answersRatingSum) / numberOfAnswers;
@@ -603,12 +934,21 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method to compute the user rating
-	private static double computeUserRating(String username, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+	/**
+	 * Computes the user rating, which is calculated by the project formula.
+	 * 
+	 * @param username
+	 *            The user name of the user whose rating is calculated.
+	 * @param statement
+	 *            A statement object used to query the database.
+	 * @return The user rating.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
+	private static double computeUserRating(String username, Statement statement) throws SQLException {
 
-		// getting the sum of the questions rating scores
-		// that this user has asked
+		// getting the sum of the questions rating scores that this user has
+		// asked
 		int userQuestionsRatingSum = Integer.parseInt(getColumnFromKey(StringConstants.USER_QUESTIONS_RATING_SUM,
 				StringConstants.USERNAME, username, StringConstants.USERS_TABLE, statement));
 
@@ -616,20 +956,14 @@ public class DatabaseInteractor {
 		int userQuestionsNumber = Integer.parseInt(getColumnFromKey(StringConstants.USER_QUESTIONS_NUMBER,
 				StringConstants.USERNAME, username, StringConstants.USERS_TABLE, statement));
 
-		// getting the sum of the answers rating scores
-		// that this user has answered
+		// getting the sum of the answers rating scores that this user has
+		// submitted
 		int userAnswersRatingSum = Integer.parseInt(getColumnFromKey(StringConstants.USER_ANSWERS_RATING_SUM,
 				StringConstants.USERNAME, username, StringConstants.USERS_TABLE, statement));
 
-		// getting the number of questions that this user has asked
+		// getting the number of answers that this user has submitted
 		int userAnswersNumber = Integer.parseInt(getColumnFromKey(StringConstants.USER_ANSWERS_NUMBER,
 				StringConstants.USERNAME, username, StringConstants.USERS_TABLE, statement));
-
-		System.out.println("after getting all that is needed:");
-		System.out.println("current questions number = " + userQuestionsNumber);
-		System.out.println("current answers number = " + userAnswersNumber);
-		System.out.println("current questions rating sum = " + userQuestionsRatingSum);
-		System.out.println("current answers rating sum = " + userAnswersRatingSum);
 
 		// calculating the user rating via the project formula
 
@@ -646,117 +980,171 @@ public class DatabaseInteractor {
 
 		double userRating = amountToAddForQuestions + amountToAddForAnswers;
 
-		System.out.println("current rating is now " + userRating);
-
 		// returning the user rating
 		return userRating;
 
 	}
 
-	// a method for adding change to an integer column in a record
-	private static void updateColumn(Integer key, int columnChange, String column, String table, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
-
-		switch (table) {
-
-		case StringConstants.QUESTIONS_TABLE:
-
-			// updating the question
-
-			updateQuestion(key, column, columnChange, statement);
-
-			break;
-
-		case StringConstants.ANSWERS_TABLE:
-
-			// updating the answer
-
-			updateAnswer(key, column, columnChange, statement);
-
-		}
-
-	}
-
-	// a method for checking the existence of a key in a table
-	public static boolean doesExistIn(String key, String table, Statement statement)
-			throws ClassNotFoundException, SQLException {
+	/**
+	 * An overloaded method. Checks the existence of a key in a table where the
+	 * key type is a string.
+	 * 
+	 * @param key
+	 *            The value of the key.
+	 * @param table
+	 *            The name of the table.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A flag indicates the existence of this key in this table.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
+	public static boolean doesExistIn(String key, String table, Statement statement) throws SQLException {
 
 		// getting the key column name from the table
 		String keyColumn = keyColumnFinder.get(table);
 
-		// get the record from its key
+		// getting the record from its key
 		ResultSet record = getRecordFromKey(table, keyColumn, key, statement);
 
-		// returning if the record has any elements
+		// returning if the result set has any rows.
 		return record.next();
 
 	}
 
-	// a method for checking the existence of a key in a table
-	public static boolean doesExistIn(Integer key, String table, Statement statement)
-			throws ClassNotFoundException, SQLException {
+	/**
+	 * An overloaded method. Checks the existence of a key in a table where the
+	 * key type is an integer.
+	 * 
+	 * @param key
+	 *            The value of the key.
+	 * @param table
+	 *            The name of the table.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A flag indicates the existence of this key in this table.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
+	public static boolean doesExistIn(Integer key, String table, Statement statement) throws SQLException {
 
 		// getting the key column name from the table
 		String keyColumn = keyColumnFinder.get(table);
 
-		// get the record from its key
+		// getting the record from its key
 		ResultSet record = getRecordFromKey(table, keyColumn, key, statement);
 
-		// returning if the record was empty
+		// returning if the result set has any rows.
 		return record.next();
 
 	}
 
-	// a method for checking the existence of a unique pair in a table
+	/**
+	 * An overloaded method. Checks the existence of a pair in a table where
+	 * both of the keys are strings.
+	 * 
+	 * @param table
+	 *            The name of the table.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The first key that is checked.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The second key that is checked.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A flag indicates the existence of this key in this table.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	public static boolean doesExistIn(String table, String firstKeyColumn, String firstKey, String secondKeyColumn,
-			String secondKey, Statement statement) throws ClassNotFoundException, SQLException {
+			String secondKey, Statement statement) throws SQLException {
 
 		// getting a record from the unique pair
 		ResultSet record = getRecordFromPair(table, firstKeyColumn, firstKey, secondKeyColumn, secondKey, statement);
 
-		// returning true if the record was not empty
+		// returning if the result set has any rows
 		return record.next();
 
 	}
 
-	// a method for checking the existence of a unique pair in a table
+	/**
+	 * An overloaded method. Checks the existence of a pair in a table where the
+	 * first key is a string and the second key is an integer.
+	 * 
+	 * @param table
+	 *            The name of the table.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The first key that is checked.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The second key that is checked.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A flag indicates the existence of this key in this table.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	public static boolean doesExistIn(String table, String firstKeyColumn, String firstKey, String secondKeyColumn,
-			Integer secondKey, Statement statement) throws ClassNotFoundException, SQLException {
+			Integer secondKey, Statement statement) throws SQLException {
 
 		// getting a record from the unique pair
 		ResultSet record = getRecordFromPair(table, firstKeyColumn, firstKey, secondKeyColumn, secondKey, statement);
 
-		// returning true if the record was not empty
+		// returning if the result set has any rows.
 		return record.next();
 
 	}
 
-	// a method for checking the existence of a unique pair in a table
+	/**
+	 * An overloaded method. Checks the existence of a pair in a table where
+	 * both of the keys are of integer type.
+	 * 
+	 * @param table
+	 *            The name of the table.
+	 * @param firstKeyColumn
+	 *            The name of the column of the first key in this table.
+	 * @param firstKey
+	 *            The first key that is checked.
+	 * @param secondKeyColumn
+	 *            The name of the column of the second key in this table.
+	 * @param secondKey
+	 *            The second key that is checked.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A flag indicates the existence of this key in this table.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	public static boolean doesExistIn(String table, String firstKeyColumn, Integer firstKey, String secondKeyColumn,
-			String secondKey, Statement statement) throws ClassNotFoundException, SQLException {
+			Integer secondKey, Statement statement) throws SQLException {
 
 		// getting a record from the unique pair
 		ResultSet record = getRecordFromPair(table, firstKeyColumn, firstKey, secondKeyColumn, secondKey, statement);
 
-		// returning true if the record was not empty
+		// returning if the result set has any rows.
 		return record.next();
 
 	}
 
-	// a method for checking the existence of a unique pair in a table
-	public static boolean doesExistIn(String table, String firstKeyColumn, Integer firstKey, String secondKeyColumn,
-			Integer secondKey, Statement statement) throws ClassNotFoundException, SQLException {
-
-		// getting a record from the unique pair
-		ResultSet record = getRecordFromPair(table, firstKeyColumn, firstKey, secondKeyColumn, secondKey, statement);
-
-		// returning true if the record was not empty
-		return record.next();
-
-	}
-
-	public static boolean doesMatchPassword(User user, Statement statement)
-			throws ClassNotFoundException, SQLException {
+	/**
+	 * Checks if a given user match its password in the users table.
+	 * 
+	 * @param user
+	 *            The user which is checked.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A flag which indicates whether the user matched the password in
+	 *         the database or not.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
+	public static boolean doesMatchPassword(User user, Statement statement) throws SQLException {
 
 		// declaring a result set object to be used
 		ResultSet record = null;
@@ -772,96 +1160,181 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting a column data from a unique pair
+	/**
+	 * An overloaded method. Gets a column from a pair of uniquely identifying
+	 * keys, where both of the keys are of string type, in the table.
+	 * 
+	 * @param column
+	 *            The name of the column that this method gets.
+	 * @param firstKeyColumn
+	 *            The name of the column of this table's first key.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of this table's second key.
+	 * @param secondKey
+	 *            The value of the second key of this record.
+	 * @param table
+	 *            The name of the table.
+	 * @param statement
+	 *            A statement object used to query the database.
+	 * @return A string instance which has the wanted column value.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	public static String getColumnFromPair(String column, String firstKeyColumn, String firstKey,
-			String secondKeyColumn, String secondKey, String table, Statement statement)
-					throws ClassNotFoundException, SQLException {
+			String secondKeyColumn, String secondKey, String table, Statement statement) throws SQLException {
 
 		// getting the record from the unique pair
 		ResultSet record = getRecordFromPair(table, firstKeyColumn, firstKey, secondKeyColumn, secondKey, statement);
 
-		// getting the request column from the record
+		// getting the requested column from the record
 		record.next();
 		return record.getString(column);
 
 	}
 
-	// a method for getting a column data from a unique pair
+	/**
+	 * An overloaded method. Gets a column from a pair of uniquely identifying
+	 * keys, where one of the keys is of string type, and the other is of
+	 * integer type, in the table.
+	 * 
+	 * @param column
+	 *            The name of the column that this method gets.
+	 * @param firstKeyColumn
+	 *            The name of the column of this table's first key.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of this table's second key.
+	 * @param secondKey
+	 *            The value of the second key of this record.
+	 * @param table
+	 *            The name of the table.
+	 * @param statement
+	 *            A statement object used to query the database.
+	 * @return A string instance which has the wanted column value.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	public static String getColumnFromPair(String column, String firstKeyColumn, String firstKey,
-			String secondKeyColumn, Integer secondKey, String table, Statement statement)
-					throws ClassNotFoundException, SQLException {
+			String secondKeyColumn, Integer secondKey, String table, Statement statement) throws SQLException {
 
 		// getting the record from the unique pair
 		ResultSet record = getRecordFromPair(table, firstKeyColumn, firstKey, secondKeyColumn, secondKey, statement);
 
-		// getting the request column from the record
+		// getting the requested column from the record
 		record.next();
 		return record.getString(column);
 
 	}
 
-	// a method for getting a column data from a unique pair
+	/**
+	 * An overloaded method. Gets a column from a pair of uniquely identifying
+	 * keys, where both of the keys are of a string type, in the table.
+	 * 
+	 * @param column
+	 *            The name of the column that this method gets.
+	 * @param firstKeyColumn
+	 *            The name of the column of this table's first key.
+	 * @param firstKey
+	 *            The value of the first key of this record.
+	 * @param secondKeyColumn
+	 *            The name of the column of this table's second key.
+	 * @param secondKey
+	 *            The value of the second key of this record.
+	 * @param table
+	 *            The name of the table.
+	 * @param statement
+	 *            A statement object used to query the database.
+	 * @return A string instance which has the wanted column value.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	public static String getColumnFromPair(String column, String firstKeyColumn, Integer firstKey,
-			String secondKeyColumn, String secondKey, String table, Statement statement)
-					throws ClassNotFoundException, SQLException {
+			String secondKeyColumn, Integer secondKey, String table, Statement statement) throws SQLException {
 
 		// getting the record from the unique pair
 		ResultSet record = getRecordFromPair(table, firstKeyColumn, firstKey, secondKeyColumn, secondKey, statement);
 
-		// getting the request column from the record
+		// getting the requested column from the record
 		record.next();
 		return record.getString(column);
 
 	}
 
-	// a method for getting a column data from a unique pair
-	public static String getColumnFromPair(String column, String firstKeyColumn, Integer firstKey,
-			String secondKeyColumn, Integer secondKey, String table, Statement statement)
-					throws ClassNotFoundException, SQLException {
-
-		// getting the record from the unique pair
-		ResultSet record = getRecordFromPair(table, firstKeyColumn, firstKey, secondKeyColumn, secondKey, statement);
-
-		// getting the request column from the record
-		record.next();
-		return record.getString(column);
-
-	}
-
-	// a method for getting a data in a column from a string key
+	/**
+	 * An overloaded method. Gets a column from a string type key.
+	 * 
+	 * @param column
+	 *            The requested column name.
+	 * @param keyColumn
+	 *            The name of the column of the key.
+	 * @param key
+	 *            The value of the key.
+	 * @param table
+	 *            The table name.
+	 * @param statement
+	 *            A statement object used to query the database.
+	 * @return A string instance which has the wanted column value.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	public static String getColumnFromKey(String column, String keyColumn, String key, String table,
-			Statement statement) throws ClassNotFoundException, SQLException {
+			Statement statement) throws SQLException {
 
 		// getting the record from the key
 		ResultSet record = getRecordFromKey(table, keyColumn, key, statement);
 
-		// getting the request column from the record
+		// getting the requested column from the record
 		record.next();
 		return record.getString(column);
 
 	}
 
-	// a method for getting a data in a column from an integer key
+	/**
+	 * An overloaded method. Gets a column from an integer type key.
+	 * 
+	 * @param column
+	 *            The requested column name.
+	 * @param keyColumn
+	 *            The name of the column of the key.
+	 * @param key
+	 *            The value of the key.
+	 * @param table
+	 *            The table name.
+	 * @param statement
+	 *            A statement object used to query the database.
+	 * @return A string instance which has the wanted column value.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	public static String getColumnFromKey(String column, String keyColumn, Integer key, String table,
-			Statement statement) throws ClassNotFoundException, SQLException {
+			Statement statement) throws SQLException {
 
 		// getting the record from the key
 		ResultSet record = getRecordFromKey(table, keyColumn, key, statement);
 
-		// getting the request column from the record
+		// getting the requested column from the record
 		record.next();
-
-		System.out.println(key);
-
 		return record.getString(column);
 
 	}
 
-	// a method for adding all the user-topic pairs to
-	// the user topic ranks table, when a new user is
-	// added to the database
-	public static void addUserTopicPairs(User user, Connection connection, Statement statement)
-			throws SQLException, ClassNotFoundException {
+	/**
+	 * An overloaded method. Adds the user topic pairs for the user topic ranks
+	 * table after a user is added to the database.
+	 * 
+	 * @param user
+	 *            The user which was added.
+	 * @param connection
+	 *            A connection object for the insert operation.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	public static void addUserTopicPairs(User user, Connection connection, Statement statement) throws SQLException {
 
 		// getting a result set containing all the topics
 		ResultSet topics = statement.executeQuery(
@@ -877,53 +1350,100 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method to change the user answers voting score
+	/**
+	 * Adds a value to the answers rating sum of a user.
+	 * 
+	 * @param username
+	 *            The user name of the user which is about to be updated.
+	 * @param scoreChange
+	 *            The value to add to the answers rating sum.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void addUserAnswersVotingScore(String username, int scoreChange, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
 		// update the user answers rating sum
 		updateUser(username, StringConstants.USER_ANSWERS_RATING_SUM, scoreChange, statement);
 
 	}
 
-	// a method to add a user question voting score sum
+	/**
+	 * Adds a value to the questions rating sum of a user.
+	 * 
+	 * @param username
+	 *            The user name of the user which is about to be updated.
+	 * @param scoreChange
+	 *            The value to add to the questions rating sum.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void addUserQuestionsVotingScore(String username, int scoreChange, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
 		// update the user questions rating sum
 		updateUser(username, StringConstants.USER_QUESTIONS_RATING_SUM, scoreChange, statement);
 
 	}
 
-	// a method for adding 1 to the user submitted answers number
-	public static void addUserAnswersNumber(String username, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+	/**
+	 * Adds 1 to the user answers number in the database.
+	 * 
+	 * @param username
+	 *            The user name of the user which is about to be updated.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	public static void addUserAnswersNumber(String username, Statement statement) throws SQLException {
 
-		// updating the questions number column
+		// updating the answers number column
 		updateUser(username, StringConstants.USER_ANSWERS_NUMBER, 1, statement);
 
 	}
 
-	// a method for adding 1 to the user submitted questions number
-	public static void addUserQuestionsNumber(String username, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+	/**
+	 * Adds 1 to the user questions number in the database.
+	 * 
+	 * @param username
+	 *            The user name of the user which is about to be updated.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	public static void addUserQuestionsNumber(String username, Statement statement) throws SQLException {
 
 		// updating the questions number column
 		updateUser(username, StringConstants.USER_QUESTIONS_NUMBER, 1, statement);
 
 	}
 
-	// a method for adding all the user-topic pairs to
-	// the user topic ranks table, when a new topic is
-	// added to the database
-	public static void addUserTopicPairs(String topic, Connection connection, Statement statement)
-			throws ClassNotFoundException, SQLException {
+	/**
+	 * An overloaded method. Adds the user topic pairs for the user topic ranks
+	 * table after a topic is added to the database.
+	 * 
+	 * @param topic
+	 *            The topic which was added.
+	 * @param connection
+	 *            A connection object for the insert operation.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	public static void addUserTopicPairs(String topic, Connection connection, Statement statement) throws SQLException {
 
-		// getting a result set containing all the user names
+		// getting a result set containing all the users
 		ResultSet users = statement.executeQuery(
 				String.format(StringConstants.SELECT, StringConstants.USERNAME, StringConstants.USERS_TABLE));
 
-		// moving through all the user names, inserting each one,
+		// moving through all the users, inserting each one,
 		// with the topic, to the user topic ranks table, with rank 0,
 		// since this is a new topic
 		while (users.next())
@@ -932,30 +1452,102 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for changing the voting score sum of the answers of a question
+	/**
+	 * Adds a value to the answers rating sum of a question.
+	 * 
+	 * @param questionId
+	 *            The id of the question which is about to be updated.
+	 * @param scoreChange
+	 *            The value to add to the answers rating sum.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void addQuestionAnswersVotingScore(int questionId, int scoreChange, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+			throws SQLException {
 
-		// updating the question score
-		updateColumn(questionId, scoreChange, StringConstants.QUESTION_ANSWERS_RATING_SUM,
-				StringConstants.QUESTIONS_TABLE, statement);
+		// updating the sum of answers rating scores which were submitted to
+		// this question
+		updateQuestion(questionId, StringConstants.QUESTION_ANSWERS_RATING_SUM, scoreChange, statement);
 
 	}
 
-	// a method for changing the voting score of a question
+	/**
+	 * Adds a value to the voting score of a question.
+	 * 
+	 * @param questionId
+	 *            The id of the question which is about to be updated.
+	 * @param scoreChange
+	 *            The value to add to the question voting score.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	public static void addQuestionVotingScore(int questionId, int scoreChange, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+			throws SQLException {
 
 		// updating the question
 		updateQuestion(questionId, StringConstants.QUESTION_VOTING_SCORE, scoreChange, statement);
 
 	}
 
-	// a method for updating an answer in the answers table
-	private static void updateAnswer(int answerId, String column, int columnChange, Statement statement)
-			throws ClassNotFoundException, SQLException {
+	/**
+	 * Adds 1 to the answers number of a question.
+	 * 
+	 * @param questionId
+	 *            The id of the question which is about to be updated.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	public static void addQuestionAnswersNumber(int questionId, Statement statement) throws SQLException {
 
-		// getting the author name and the question id of the question that
+		// updating the question
+		updateQuestion(questionId, StringConstants.QUESTION_ANSWERS_NUMBER, 1, statement);
+
+	}
+
+	/**
+	 * Adds a value to the voting score of an answer.
+	 * 
+	 * @param answerId
+	 *            The id of the answer which is about to be updated.
+	 * @param scoreChange
+	 *            The value to add to the answer voting score.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	public static void addAnswerVotingScore(int answerId, int scoreChange, Statement statement) throws SQLException {
+
+		// updating the answer
+		updateAnswer(answerId, StringConstants.RATING, scoreChange, statement);
+
+	}
+
+	/**
+	 * Updates an answer in the database.
+	 * 
+	 * @param answerId
+	 *            The id of the answer to update.
+	 * @param column
+	 *            The column to update.
+	 * @param columnChange
+	 *            The change to be applied to the column.
+	 * @param statement
+	 *            A statement object used to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	private static void updateAnswer(int answerId, String column, int columnChange, Statement statement)
+			throws SQLException {
+
+		// getting the author name of this answer and the question id of the
+		// question that
 		// this answer was submitted to
 
 		String username = getColumnFromKey(StringConstants.AUTHOR, StringConstants.ID, answerId,
@@ -987,35 +1579,24 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for updating a user in the users table
-	private static void updateUser(String username, String column, int columnChange, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
-
-		// updating the user
-
-		int currentColumnValue = Integer.parseInt(
-				getColumnFromKey(column, StringConstants.USERNAME, username, StringConstants.USERS_TABLE, statement));
-
-		int updatedColumnValue = currentColumnValue + columnChange;
-
-		System.out.println("current = " + currentColumnValue + "\n");
-		System.out.println("updated = " + updatedColumnValue + "\n");
-
-		updateDatabase(username, StringConstants.USERS_TABLE, column, updatedColumnValue, statement);
-
-		System.out.println("after updating the user questions number to " + updatedColumnValue);
-
-		updateUserRating(username, statement);
-
-	}
-
-	// a method for updating a question in the questions table
+	/**
+	 * Updates a question in the database.
+	 * 
+	 * @param questionId
+	 *            The id of the question to update.
+	 * @param column
+	 *            The column to update.
+	 * @param columnChange
+	 *            The change to be applied to the column.
+	 * @param statement
+	 *            A statement object used to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	private static void updateQuestion(int questionId, String column, int columnChange, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+			throws SQLException {
 
 		// updating the question and getting the question rating change
-
-		System.out.println("before any update");
 
 		int currentColumnValue = Integer.parseInt(
 				getColumnFromKey(column, StringConstants.ID, questionId, StringConstants.QUESTIONS_TABLE, statement));
@@ -1023,14 +1604,10 @@ public class DatabaseInteractor {
 		double beforeQuestionRating = Double.parseDouble(getColumnFromKey(StringConstants.RATING, StringConstants.ID,
 				questionId, StringConstants.QUESTIONS_TABLE, statement));
 
-		System.out.println("before adding the question " + column + " and rating");
-
 		updateDatabase(questionId, StringConstants.QUESTIONS_TABLE, column, currentColumnValue + columnChange,
 				statement);
 
 		updateQuestionRating(questionId, statement);
-
-		System.out.println("after updating the question " + column + " and rating");
 
 		double afterQuestionRating = Double.parseDouble(getColumnFromKey(StringConstants.RATING, StringConstants.ID,
 				questionId, StringConstants.QUESTIONS_TABLE, statement));
@@ -1065,44 +1642,82 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for adding 1 to the question submitted answers number
-	public static void addQuestionAnswersNumber(int questionId, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+	/**
+	 * Updates a user in the database.
+	 * 
+	 * @param username
+	 *            The name of the user to update.
+	 * @param column
+	 *            The column to update.
+	 * @param columnChange
+	 *            The change to be applied to the column.
+	 * @param statement
+	 *            A statement object used to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	private static void updateUser(String username, String column, int columnChange, Statement statement)
+			throws SQLException {
 
-		// updating the question
-		updateQuestion(questionId, StringConstants.QUESTION_ANSWERS_NUMBER, 1, statement);
+		// updating the user
+
+		int currentColumnValue = Integer.parseInt(
+				getColumnFromKey(column, StringConstants.USERNAME, username, StringConstants.USERS_TABLE, statement));
+
+		int updatedColumnValue = currentColumnValue + columnChange;
+
+		updateDatabase(username, StringConstants.USERS_TABLE, column, updatedColumnValue, statement);
+
+		updateUserRating(username, statement);
 
 	}
 
-	// a method for changing the voting score of an answer
-	public static void addAnswerVotingScore(int answerId, int scoreChange, Statement statement)
-			throws NumberFormatException, ClassNotFoundException, SQLException {
+	/**
+	 * Gets all the topics associated with a question.
+	 * 
+	 * @param questionId
+	 *            The id of the question that its topics are to be retrieved.
+	 * @param statement
+	 *            A statement object to query the database.
+	 * @return A string array which includes all the names of topics associated
+	 *         with the given question.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
+	private static String[] getTopicsFromQuestion(int questionId, Statement statement) throws SQLException {
 
-		// updating the answer
-		updateAnswer(answerId, StringConstants.RATING, scoreChange, statement);
-
-	}
-
-	// a method for getting an array list of strings containing all the topics
-	// of a given question
-	private static String[] getTopicsFromQuestion(int questionId, Statement statement)
-			throws SQLException, ClassNotFoundException {
-
+		// getting the topics string of this question
 		String questionTopics = getColumnFromKey(StringConstants.QUESTION_TOPICS,
 				keyColumnFinder.get(StringConstants.QUESTIONS_TABLE), questionId, StringConstants.QUESTIONS_TABLE,
 				statement);
 
+		// if it's not empty, return all the topics that are divided by the
+		// topic divider character
 		if (questionTopics.length() != 0)
 			return questionTopics.substring(1).split(StringConstants.TOPIC_DIVIDER);
 
+		// else - return an empty array
 		return new String[0];
 
 	}
 
-	// a method for updating the user topic ranks of a given user
-	// and all the topics of a given question
+	/**
+	 * Updates the user topic ranks of a given user and all the topics
+	 * associated with a given question.
+	 * 
+	 * @param username
+	 *            The name of the given user.
+	 * @param questionId
+	 *            The id of the given question.
+	 * @param rankChange
+	 *            The rank change to be applied to the topics.
+	 * @param statement
+	 *            A statement object to update the database.
+	 * @throws SQLException
+	 *             If fails to update the database.
+	 */
 	private static void updateUserTopicRanks(String username, int questionId, int rankChange, Statement statement)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
 		// getting the topics from this question
 		String[] topics = getTopicsFromQuestion(questionId, statement);
@@ -1124,60 +1739,40 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting the new questions in the parameter page
-	public static Question[] getNewQuestions(int pageNum, String username, Connection connection,
-			HttpServletResponse response) throws ClassNotFoundException, SQLException {
+	/**
+	 * Gets the new questions from the database. A question is new if no answer
+	 * has been submitted to it yet. The questions are retrieved sorted from
+	 * newest to oldest, and the user who requests to view them may view up to
+	 * 20 at a time.
+	 * 
+	 * @param pageNumber
+	 *            The number of the page which the user requests to view.
+	 * @param requestingUsername
+	 *            The name of the user who requests to view the questions.
+	 * @param connection
+	 *            A connection object used to provide statement objects to query
+	 *            the database throughout the method operation time.
+	 * @param response
+	 *            A response object used to send information to the client which
+	 *            is retrieved in run time.
+	 * @return An array which includes the questions to be viewed by the user.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
+	public static Question[] getNewQuestions(int pageNumber, String requestingUsername, Connection connection,
+			HttpServletResponse response) throws SQLException {
 
+		// getting a statement object to query the database
 		Statement statement = connection.createStatement();
 
 		// getting a result set containing the questions sorted
-		// in descending order by their id (time of submission
+		// in descending order by their id (time of submission)
 
 		ResultSet sortedQuestions = statement
-				.executeQuery(String.format("SELECT %s FROM %s WHERE " + "%s=0 ORDER BY %s DESC", StringConstants.ALL,
+				.executeQuery(String.format("SELECT %s FROM %s WHERE %s=0 ORDER BY %s DESC", StringConstants.ALL,
 						StringConstants.QUESTIONS_TABLE, StringConstants.QUESTION_ANSWERS_NUMBER, StringConstants.ID));
 
-		int startIndex = (pageNum - 1) * 20 + 1;
-		for (int i = 1; i < startIndex; i++)
-			sortedQuestions.next();
-
-		// putting the needed questions into an array list of questions
-
-		ArrayList<Question> neededQuestionsArrayList = new ArrayList<Question>();
-
-		int isLastPage = 0;
-		
-		for (int i = 0; i < 20; i++) {
-
-			if (sortedQuestions.next() == false) {
-				isLastPage = 1;
-				break;
-			}
-
-			neededQuestionsArrayList.add(buildQuestionFromRecord(sortedQuestions, username, connection));
-
-		}
-
-		ClientInteractor.sendData(response, "{ \"isLastPage\": " + isLastPage + ", \"questions\": ");
-		
-		statement.close();
-
-		return neededQuestionsArrayList.toArray(new Question[neededQuestionsArrayList.size()]);
-
-	}
-
-	// a method for getting the existing questions in the parameter page
-	public static Question[] getExistingQuestions(int pageNumber, String username, Connection connection,
-			HttpServletResponse response) throws ClassNotFoundException, SQLException {
-
-		Statement statement = connection.createStatement();
-
-		// getting a result set containing the questions sorted
-		// in descending order by their rating
-
-		ResultSet sortedQuestions = statement.executeQuery(String.format("SELECT %s FROM %s ORDER BY %s DESC",
-				StringConstants.ALL, StringConstants.QUESTIONS_TABLE, StringConstants.RATING));
-
+		// moving the cursor to the required row
 		int startIndex = (pageNumber - 1) * 20 + 1;
 		for (int i = 1; i < startIndex; i++)
 			sortedQuestions.next();
@@ -1186,19 +1781,25 @@ public class DatabaseInteractor {
 
 		ArrayList<Question> neededQuestionsArrayList = new ArrayList<Question>();
 
+		// an integer required to notify the user if the current page is the
+		// last
 		int isLastPage = 0;
-		
+
 		for (int i = 0; i < 20; i++) {
 
+			// if the result set is finished, this page is the last
 			if (sortedQuestions.next() == false) {
 				isLastPage = 1;
 				break;
 			}
 
-			neededQuestionsArrayList.add(buildQuestionFromRecord(sortedQuestions, username, connection));
+			neededQuestionsArrayList.add(buildQuestionFromRecord(sortedQuestions, requestingUsername, connection));
 
 		}
-		
+
+		if (isLastPage == 1 || sortedQuestions.next() == false)
+			isLastPage = 1;
+
 		ClientInteractor.sendData(response, "{ \"isLastPage\": " + isLastPage + ", \"questions\": ");
 
 		statement.close();
@@ -1207,10 +1808,93 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting the top 20 users
-	public static User[] getUsersLeaderBoard(String requestingUsername, Connection connection,
-			HttpServletResponse response) throws SQLException, ClassNotFoundException {
+	/**
+	 * Gets the existing questions from the database. The questions are
+	 * retrieved sorted by their rating score, which was calculated by the
+	 * project formula, from high to low. The user who requests to view them may
+	 * view up to 20 at a time.
+	 * 
+	 * @param pageNumber
+	 *            The number of the page which the user requests to view.
+	 * @param requestingUsername
+	 *            The name of the user who requests to view the questions.
+	 * @param connection
+	 *            A connection object used to provide statement objects to query
+	 *            the database throughout the method operation time.
+	 * @param response
+	 *            A response object used to send information to the client which
+	 *            is retrieved in run time.
+	 * @return An array which includes the questions to be viewed by the user.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
+	public static Question[] getExistingQuestions(int pageNumber, String requestingUsername, Connection connection,
+			HttpServletResponse response) throws SQLException {
 
+		// getting a statement object to query the database
+		Statement statement = connection.createStatement();
+
+		// getting a result set containing the questions sorted
+		// in descending order by their rating
+
+		ResultSet sortedQuestions = statement.executeQuery(String.format("SELECT %s FROM %s ORDER BY %s DESC",
+				StringConstants.ALL, StringConstants.QUESTIONS_TABLE, StringConstants.RATING));
+
+		// moving the cursor to the required row
+		int startIndex = (pageNumber - 1) * 20 + 1;
+		for (int i = 1; i < startIndex; i++)
+			sortedQuestions.next();
+
+		// putting the needed questions into an array list of questions
+
+		ArrayList<Question> neededQuestionsArrayList = new ArrayList<Question>();
+
+		// an integer used to indicate if this page is the last page
+		int isLastPage = 0;
+
+		for (int i = 0; i < 20; i++) {
+
+			// if the result set is finished - this page is the last page
+			if (sortedQuestions.next() == false) {
+				isLastPage = 1;
+				break;
+			}
+
+			neededQuestionsArrayList.add(buildQuestionFromRecord(sortedQuestions, requestingUsername, connection));
+
+		}
+
+		if (isLastPage == 1 || sortedQuestions.next() == false)
+			isLastPage = 1;
+
+		ClientInteractor.sendData(response, "{ \"isLastPage\": " + isLastPage + ", \"questions\": ");
+
+		statement.close();
+
+		return neededQuestionsArrayList.toArray(new Question[neededQuestionsArrayList.size()]);
+
+	}
+
+	/**
+	 * Gets the top 20 highly rated users from the database.
+	 * 
+	 * @param requestingUsername
+	 *            The name of the user who requests to view the users.
+	 * @param connection
+	 *            A connection object used to provide statement objects to query
+	 *            the database throughout the method operation time.
+	 * @param response
+	 *            A response object used to send information to the client which
+	 *            is retrieved in run time.
+	 * @return An array which includes the users to be viewed by the user.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 * 
+	 */
+	public static User[] getUsersLeaderBoard(String requestingUsername, Connection connection,
+			HttpServletResponse response) throws SQLException {
+
+		// getting a statement object to query the database
 		Statement statement = connection.createStatement();
 
 		// getting a result set containing the users sorted
@@ -1225,10 +1909,8 @@ public class DatabaseInteractor {
 
 		for (int i = 0; i < 20; i++) {
 
-			if (sortedUsers.next() == false) {
-				//ClientInteractor.sendStatus(response, 3);
+			if (sortedUsers.next() == false)
 				break;
-			}
 
 			neededUsersArrayList.add(buildUserFromRecord(sortedUsers, requestingUsername, connection));
 
@@ -1240,9 +1922,24 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting the top topics
+	/**
+	 * Gets the topics requested by a user sorted by their popularity. The user
+	 * may request to view up to 20 topics at a time.
+	 * 
+	 * @param pageNumber
+	 *            The number of the page requested by the user.
+	 * @param statement
+	 *            A statement object used to query the database.
+	 * @param response
+	 *            A response object used to send information to the client which
+	 *            is retrieved in run time.
+	 * @return An array which includes the topics to be viewed by the user.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 * 
+	 */
 	public static Topic[] getTopTopics(int pageNumber, Statement statement, HttpServletResponse response)
-			throws SQLException, ClassNotFoundException {
+			throws SQLException {
 
 		// getting a result set containing the topics, sorted descending order
 		// by their rating
@@ -1250,6 +1947,7 @@ public class DatabaseInteractor {
 		ResultSet sortedTopics = statement.executeQuery(String.format("SELECT %s FROM %s ORDER BY %s DESC",
 				StringConstants.ALL, StringConstants.TOPICS_TABLE, StringConstants.TOPIC_POPULARITY));
 
+		// moving the cursor to the required row
 		int startIndex = (pageNumber - 1) * 20 + 1;
 		for (int i = 1; i < startIndex; i++)
 			sortedTopics.next();
@@ -1258,10 +1956,12 @@ public class DatabaseInteractor {
 
 		ArrayList<Topic> neededTopicsArrayList = new ArrayList<Topic>();
 
+		// an integer used to indicate if it's the last page
 		int isLastPage = 0;
-		
+
 		for (int i = 0; i < 20; i++) {
 
+			// if the result set is finished, this is the last page
 			if (sortedTopics.next() == false) {
 				isLastPage = 1;
 				break;
@@ -1271,16 +1971,35 @@ public class DatabaseInteractor {
 
 		}
 
+		if (isLastPage == 1 || sortedTopics.next() == false)
+			isLastPage = 1;
+
 		ClientInteractor.sendData(response, " { \"isLastPage\": " + isLastPage + ", \"topics\": ");
-		
+
 		return neededTopicsArrayList.toArray(new Topic[neededTopicsArrayList.size()]);
 
 	}
 
-	// a method for getting the user summary
+	/**
+	 * Gets a user summary.
+	 * 
+	 * @param username
+	 *            The name of the user whose summary is requested to view.
+	 * @param requestingUsername
+	 *            The name of the user who requests to view the the user
+	 *            summary.
+	 * @param connection
+	 *            A connection object used to provide statement objects to query
+	 *            the database throughout the method operation time.
+	 * @return A user object which includes the information to be viewed.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 * 
+	 */
 	public static User getUserSummary(String username, String requestingUsername, Connection connection)
-			throws ClassNotFoundException, SQLException {
+			throws SQLException {
 
+		// getting a statement object to query the database
 		Statement statement = connection.createStatement();
 
 		// getting the user record from the user name
@@ -1301,15 +2020,101 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for building a user object from a user record
-	private static User buildUserFromRecord(ResultSet userRecord, String requestingUsername, Connection connection)
-			throws SQLException, ClassNotFoundException {
+	/**
+	 * Gets the top questions associated with a given topic. The questions will
+	 * be sorted by their rating.
+	 * 
+	 * @param topic
+	 *            The name of the topic associated with the questions.
+	 * @param pageNumber
+	 *            The page number which is requested to view by the user.
+	 * @param requestingUsername
+	 *            The name of the user who requests to view the questions.
+	 * @param connection
+	 *            A connection object used to provide statements to query the
+	 *            database throughout the execution.
+	 * @param response
+	 *            A response object used to write data, which is retrieved in
+	 *            run time, to the client.
+	 * @return An array of questions which includes the top questions associated
+	 *         with the given topic.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
+	public static Question[] getTopQuestionsByTopic(String topic, int pageNumber, String requestingUsername,
+			Connection connection, HttpServletResponse response) throws SQLException {
 
-		System.out.println("is closed ? " + userRecord.isClosed());
-
+		// getting a statement object to query the database
 		Statement statement = connection.createStatement();
 
-		System.out.println("is closed after creating statement ? " + userRecord.isClosed());
+		// getting a questions result set where the questions are associated
+		// with the given topic, sorted by their question rating
+
+		ResultSet sortedQuestionsByTopicSet = statement.executeQuery(String.format(
+				"SELECT %s FROM %s WHERE %s like '%%#%s%%' ORDER BY %s DESC", StringConstants.ALL,
+				StringConstants.QUESTIONS_TABLE, StringConstants.QUESTION_TOPICS, topic, StringConstants.RATING));
+
+		System.out.println("page number = " + pageNumber + " topic name = " + topic);
+		
+		// moving the cursor to the required row
+		int startIndex = (pageNumber - 1) * 20 + 1;
+		for (int i = 1; i < startIndex; i++)
+			sortedQuestionsByTopicSet.next();
+
+		// putting the needed questions from the above records in an array list
+
+		ArrayList<Question> neededQuestions = new ArrayList<Question>();
+
+		// an integer used to indicate if it's the last page
+		int isLastPage = 0;
+
+		for (int i = 0; i < 20; i++) {
+
+			// if the result set is finished then this is the last page
+			if (sortedQuestionsByTopicSet.next() == false) {
+				isLastPage = 1;
+				break;
+			}
+
+			neededQuestions.add(buildQuestionFromRecord(sortedQuestionsByTopicSet, requestingUsername, connection));
+
+		}
+
+		if (isLastPage == 1 || sortedQuestionsByTopicSet.next() == false)
+			isLastPage = 1;
+
+		ClientInteractor.sendData(response, " { \"isLastPage\": " + isLastPage + ", \"questions\": ");
+
+		statement.close();
+		
+		for (Question question : neededQuestions)
+			System.out.println(question.getText());
+
+		return neededQuestions.toArray(new Question[neededQuestions.size()]);
+
+	}
+
+	/**
+	 * Builds a user object from a record of a row in the users table.
+	 * 
+	 * @param userRecord
+	 *            A record of a row in the users table.
+	 * @param requestingUsername
+	 *            The name of the user who requested to view the user.
+	 * @param connection
+	 *            A connection object to provide statements used to query the
+	 *            database throughout the build.
+	 * @return A user object which includes the information the user has asked
+	 *         to view.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 * 
+	 */
+	private static User buildUserFromRecord(ResultSet userRecord, String requestingUsername, Connection connection)
+			throws SQLException {
+
+		// getting a statement object to query the database
+		Statement statement = connection.createStatement();
 
 		// making the user object
 
@@ -1361,45 +2166,82 @@ public class DatabaseInteractor {
 
 		userToBuild.setLastAskedQuestions(lastAskedQuestions);
 
-		// getting the user last answered answers
+		// getting the user last answered questions
 
-		Answer[] lastAnsweredAnswers = getLastAnsweredAnswers(userToBuild.getName(), 5, requestingUsername, connection);
+		Question[] lastAnsweredQuestions = getLastAnsweredQuestions(userToBuild.getName(), 5, requestingUsername,
+				connection);
 
-		// getting the questions which the user last answered answers were
-		// submitted to
-
-		Question[] lastAnsweredQuestions = new Question[lastAnsweredAnswers.length];
+		// getting the answers which the user has submitted to those questions
 
 		for (int i = 0; i < lastAnsweredQuestions.length; i++) {
 
-			int questionId = Integer.parseInt(getColumnFromKey(StringConstants.QUESTION_ID, StringConstants.ID,
-					lastAnsweredAnswers[i].getId(), StringConstants.ANSWERS_TABLE, statement));
+			/*
+			 * int questionId =
+			 * Integer.parseInt(getColumnFromKey(StringConstants.QUESTION_ID,
+			 * StringConstants.ID, lastAnsweredAnswers[i].getId(),
+			 * StringConstants.ANSWERS_TABLE, statement));
+			 * 
+			 * ResultSet questionRecord =
+			 * getRecordFromKey(StringConstants.QUESTIONS_TABLE,
+			 * StringConstants.ID, questionId, statement);
+			 * questionRecord.next();
+			 * 
+			 * lastAnsweredQuestions[i] =
+			 * buildQuestionFromRecord(questionRecord, requestingUsername,
+			 * connection);
+			 * 
+			 * Answer[] questionAnswers = new Answer[1]; questionAnswers[0] =
+			 * lastAnsweredAnswers[i];
+			 * 
+			 * lastAnsweredQuestions[i].setAnswers(questionAnswers);
+			 */
 
-			ResultSet questionRecord = getRecordFromKey(StringConstants.QUESTIONS_TABLE, StringConstants.ID, questionId,
-					statement);
-			questionRecord.next();
+			Answer[] userAnswer = new Answer[1];
 
-			lastAnsweredQuestions[i] = buildQuestionFromRecord(questionRecord, requestingUsername, connection);
+			ResultSet userAnswersResultSet = statement
+					.executeQuery(String.format("SELECT %s FROM %s WHERE %s='%s' AND %s=%d", StringConstants.ID,
+							StringConstants.ANSWERS_TABLE, StringConstants.AUTHOR, userToBuild.getName(),
+							StringConstants.QUESTION_ID, lastAnsweredQuestions[i].getId()));
 
-			Answer[] questionAnswers = new Answer[1];
-			questionAnswers[0] = lastAnsweredAnswers[i];
+			userAnswersResultSet.next();
 
-			lastAnsweredQuestions[i].setAnswers(questionAnswers);
+			ResultSet currentAnswer = getRecordFromKey(StringConstants.ANSWERS_TABLE, StringConstants.ID,
+					userAnswersResultSet.getInt(StringConstants.ID), statement);
+
+			currentAnswer.next();
+
+			userAnswer[0] = buildAnswerFromRecord(currentAnswer, requestingUsername, connection);
+
+			lastAnsweredQuestions[i].setAnswers(userAnswer);
 
 		}
 
 		userToBuild.setLastAnsweredQuestions(lastAnsweredQuestions);
 
+		statement.close();
+
 		return userToBuild;
 
 	}
 
-	// a method for building a question object from a question record and a user
-	// name
-	// (for checking what the vote should display)
+	/**
+	 * Builds a question object from a record of a row in the questions table.
+	 * 
+	 * @param questionRecord
+	 *            A record of a row in the questions table.
+	 * @param requestingUsername
+	 *            The name of the user who requested to view the question.
+	 * @param connection
+	 *            A connection object used to provide statements to query the
+	 *            database throughout the execution.
+	 * @return A question object which includes the information to be viewed.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 */
 	private static Question buildQuestionFromRecord(ResultSet questionRecord, String requestingUsername,
-			Connection connection) throws SQLException, ClassNotFoundException {
+			Connection connection) throws SQLException {
 
+		// getting a statement object to query the database
 		Statement statement = connection.createStatement();
 
 		// making the question object
@@ -1414,8 +2256,12 @@ public class DatabaseInteractor {
 
 		String topicsString = questionRecord.getString(StringConstants.QUESTION_TOPICS);
 
+		// getting the topics associated with the question
+
 		Topic[] topics;
 
+		// if the topic string is not empty, then divide it by the topic divider
+		// character
 		if (topicsString.length() != 0) {
 
 			String[] topicsArrayString = topicsString.substring(1).split(StringConstants.TOPIC_DIVIDER);
@@ -1430,11 +2276,10 @@ public class DatabaseInteractor {
 
 		} else {
 
+			// else - make an empty array
 			topics = new Topic[0];
 
 		}
-
-		System.out.println("is closed before ? " + questionRecord.isClosed());
 
 		questionToBuild.setTopics(topics);
 
@@ -1467,8 +2312,6 @@ public class DatabaseInteractor {
 				"SELECT %s FROM %s WHERE %s=%d ORDER BY %s DESC", StringConstants.ALL, StringConstants.ANSWERS_TABLE,
 				StringConstants.QUESTION_ID, questionToBuild.getId(), StringConstants.RATING));
 
-		System.out.println("question answers closed ? " + questionAnswers.isClosed());
-
 		ArrayList<Answer> questionAnswersArrayList = new ArrayList<Answer>();
 
 		while (questionAnswers.next()) {
@@ -1479,18 +2322,31 @@ public class DatabaseInteractor {
 
 		questionToBuild.setAnswers(questionAnswersArrayList.toArray(new Answer[questionAnswersArrayList.size()]));
 
-		System.out.println("is closed ? " + questionRecord.isClosed());
-
 		statement.close();
 
 		return questionToBuild;
 
 	}
 
-	// a method for building an answer object from an answer record
+	/**
+	 * Builds an answer object from a record of a row in the answers table.
+	 * 
+	 * @param answerRecord
+	 *            A record of a row in the answers table.
+	 * @param requestingUsername
+	 *            The name of the user who requested to view the answer.
+	 * @param connection
+	 *            A connection object used to provide statements to query the
+	 *            database throughout the execution.
+	 * @return An answer object which includes the information to be viewed.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 * 
+	 */
 	private static Answer buildAnswerFromRecord(ResultSet answerRecord, String requestingUsername,
-			Connection connection) throws SQLException, ClassNotFoundException {
+			Connection connection) throws SQLException {
 
+		// getting a statement object to query the database
 		Statement statement = connection.createStatement();
 
 		Answer answerToBuild = new Answer();
@@ -1534,7 +2390,21 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting a topic object from a topic record
+	/**
+	 * Builds a topic object from a record of a row in the topics table.
+	 * 
+	 * @param topicRecord
+	 *            A record of a row in the topics table.
+	 * @param requestingUsername
+	 *            The name of the user who requested to view the topic.
+	 * @param connection
+	 *            A connection object used to provide statements to query the
+	 *            database throughout the execution.
+	 * @return A topic object which includes the information to be viewed.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 * 
+	 */
 	private static Topic buildTopicFromRecord(ResultSet topicRecord) throws SQLException {
 
 		// building the topic object
@@ -1549,10 +2419,28 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting the last amount of asked questions by a given user
+	/**
+	 * Gets the last asked questions of a user, sorted from newest to oldest.
+	 * 
+	 * @param username
+	 *            The name of the user who asked to questions.
+	 * @param amount
+	 *            The amount of questions to get.
+	 * @param requestionUsername
+	 *            The name of the user who requests to view the questions.
+	 * @param connection
+	 *            A connection object used to provide statement objects to query
+	 *            the database throughout the execution.
+	 * @return An array of questions which includes the last asked questions of
+	 *         the given user.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 * 
+	 */
 	private static Question[] getLastAskedQuestions(String username, int amount, String requestionUsername,
-			Connection connection) throws ClassNotFoundException, SQLException {
+			Connection connection) throws SQLException {
 
+		// getting a statement object to query the database
 		Statement statement = connection.createStatement();
 
 		// getting a question a result set of questions asked by this user name,
@@ -1587,137 +2475,100 @@ public class DatabaseInteractor {
 
 	}
 
-	// a method for getting the last answered answers of a given user
-	private static Answer[] getLastAnsweredAnswers(String username, int amount, String requestingUsername,
-			Connection connection) throws SQLException, ClassNotFoundException {
+	/**
+	 * Gets the last answered questions of a user, sorted from newest to oldest.
+	 * 
+	 * @param username
+	 *            The name of the user who answered the questions.
+	 * @param amount
+	 *            The amount of questions to get.
+	 * @param requestionUsername
+	 *            The name of the user who requests to view the questions.
+	 * @param connection
+	 *            A connection object used to provide statement objects to query
+	 *            the database throughout the execution.
+	 * @return An array of questions which includes the last answered questions
+	 *         of the given user.
+	 * @throws SQLException
+	 *             If fails to query the database.
+	 * 
+	 */
+	private static Question[] getLastAnsweredQuestions(String username, int amount, String requestingUsername,
+			Connection connection) throws SQLException {
 
+		// getting two statements objects to query the database
 		Statement statement = connection.createStatement();
+		Statement statementForGettingRecords = connection.createStatement();
 
 		// getting a result set of answers answered by this user,
 		// sorted by their id (from newest to oldest)
-		ResultSet lastAnsweredAnswersSet = statement.executeQuery(
-				String.format("SELECT %s FROM " + "%s WHERE %s='%s' ORDER BY %s DESC", StringConstants.ALL,
+		ResultSet lastAnsweredAnswersSet = statement
+				.executeQuery(String.format("SELECT %s FROM %s WHERE %s='%s' ORDER BY %s DESC", StringConstants.ALL,
 						StringConstants.ANSWERS_TABLE, StringConstants.AUTHOR, username, StringConstants.ID));
 
-		// getting an array list of answers from this result set
+		// getting the last 'amount' of answered questions
+		HashSet<Integer> duplicatePreventer = new HashSet<Integer>();
+		int i = 0;
 
-		ArrayList<Answer> lastAnsweredAnswers = new ArrayList<Answer>();
+		// getting an array list of questions from this result set
 
-		// putting the answers from the record to the answers array list
+		ArrayList<Question> lastAnsweredQuestions = new ArrayList<Question>();
 
-		if (lastAnsweredAnswersSet.next()) {
+		while (i < amount && lastAnsweredAnswersSet.next()) {
 
-			for (int i = 0; i < amount; i++) {
+			if (duplicatePreventer.contains(lastAnsweredAnswersSet.getInt(StringConstants.QUESTION_ID)))
+				continue;
 
-				lastAnsweredAnswers.add(buildAnswerFromRecord(lastAnsweredAnswersSet, requestingUsername, connection));
+			ResultSet questionRecord = getRecordFromKey(StringConstants.QUESTIONS_TABLE, StringConstants.ID,
+					lastAnsweredAnswersSet.getInt(StringConstants.QUESTION_ID), statementForGettingRecords);
 
-				if (lastAnsweredAnswersSet.next() == false)
-					break;
+			questionRecord.next();
 
-			}
+			lastAnsweredQuestions.add(buildQuestionFromRecord(questionRecord, requestingUsername, connection));
+
+			// preventing the duplication
+			
+			duplicatePreventer.add(questionRecord.getInt(StringConstants.ID));
+			
+			// preventing getting more than the amount requested
+			
+			i++;
 
 		}
 
+		/*
+		 * if (lastAnsweredAnswersSet.next()) {
+		 * 
+		 * for (int i = 0; i < amount; i++) {
+		 * 
+		 * ResultSet questionRecord =
+		 * getRecordFromKey(StringConstants.QUESTIONS_TABLE, StringConstants.ID,
+		 * lastAnsweredAnswersSet.getInt(StringConstants.QUESTION_ID),
+		 * statementForGettingRecords);
+		 * 
+		 * questionRecord.next();
+		 * 
+		 * lastAnsweredQuestions.add(buildQuestionFromRecord(questionRecord,
+		 * requestingUsername, connection));
+		 * 
+		 * if (lastAnsweredAnswersSet.next() == false) break;
+		 * 
+		 * }
+		 * 
+		 * }
+		 */
 		statement.close();
 
-		return lastAnsweredAnswers.toArray(new Answer[lastAnsweredAnswers.size()]);
+		return lastAnsweredQuestions.toArray(new Question[lastAnsweredQuestions.size()]);
 
 	}
 
-	// a method for getting the top questions by topic
-	public static Question[] getTopQuestionsByTopic(String topic, int pageNumber, String requestingUsername,
-			Connection connection, HttpServletResponse response) throws ClassNotFoundException, SQLException {
-
-		Statement statement = connection.createStatement();
-
-		// getting a questions result set where the questions have the given
-		// topic
-		// in their topics property, and the questions are given sorted by their
-		// question rating
-
-		ResultSet sortedQuestionsByTopicSet = statement.executeQuery(String.format(
-				"SELECT %s FROM %s WHERE %s like '%%#%s%%' ORDER BY %s DESC", StringConstants.ALL,
-				StringConstants.QUESTIONS_TABLE, StringConstants.QUESTION_TOPICS, topic, StringConstants.RATING));
-
-		int startIndex = (pageNumber - 1) * 20 + 1;
-		for (int i = 1; i < startIndex; i++)
-			sortedQuestionsByTopicSet.next();
-
-		// putting the needed questions from the above records in an array list
-
-		ArrayList<Question> neededQuestions = new ArrayList<Question>();
-
-		int isLastPage = 0;
-		
-		for (int i = 0; i < 20; i++) {
-
-			if (sortedQuestionsByTopicSet.next() == false) {
-				isLastPage = 1;
-				break;
-			}
-
-			neededQuestions.add(buildQuestionFromRecord(sortedQuestionsByTopicSet, requestingUsername, connection));
-
-		}
-		
-		ClientInteractor.sendData(response, " { \"isLastPage\": " + isLastPage
-				+ ", \"questions\": ");
-
-		statement.close();
-
-		return neededQuestions.toArray(new Question[neededQuestions.size()]);
-
-	}
-
-	// a method for showing all the data in a table
-	public static void showTable(String table, Statement statement) throws ClassNotFoundException, SQLException {
-
-		System.out.println("\n\nShowing the " + table + " table:\n\n");
-
-		// declaring a result set object to be used
-		ResultSet resultSet = null;
-
-		// selecting all from the table
-		resultSet = statement.executeQuery(String.format(StringConstants.SELECT, StringConstants.ALL, table));
-
-		switch (table) {
-
-		case StringConstants.USERS_TABLE:
-
-			// the result set is of users
-
-			// moving through the results
-			while (resultSet.next()) {
-
-			}
-
-			break;
-
-		case StringConstants.QUESTIONS_TABLE:
-
-			// the result set is of questions
-
-			// moving through the results
-			while (resultSet.next()) {
-
-			}
-
-			break;
-
-		default:
-
-			break;
-
-		}
-
-		// closing the resources
-		resultSet.close();
-
-	}
-
+	/**
+	 * Shows the questions table. Used for debugging.
+	 */
 	public static void showQuestions() {
 
-		System.out.println("printing questions!!!\n\n\n");
+		System.out.println("Printing the questions table:\n");
 
 		Connection connection = null;
 		Statement statement = null;
@@ -1763,9 +2614,12 @@ public class DatabaseInteractor {
 
 	}
 
+	/**
+	 * Shows the answers table. Used for debugging.
+	 */
 	public static void showAnswers() {
 
-		System.out.println("printing answers!!!\n\n\n");
+		System.out.println("Printing the answers:\n");
 
 		Connection connection = null;
 		Statement statement = null;
@@ -1808,9 +2662,12 @@ public class DatabaseInteractor {
 
 	}
 
+	/**
+	 * Shows the users table. Used for debugging.
+	 */
 	public static void showUsers() {
 
-		System.out.println("printing users!!!\n\n\n");
+		System.out.println("Printing users.\n");
 
 		Connection connection = null;
 		Statement statement = null;
@@ -1853,9 +2710,12 @@ public class DatabaseInteractor {
 
 	}
 
+	/**
+	 * Shows the topics table. Used for debugging.
+	 */
 	public static void showTopics() {
 
-		System.out.println("printing topics!!!\n\n\n");
+		System.out.println("Printing topics.\n");
 
 		Connection connection = null;
 		Statement statement = null;
@@ -1893,9 +2753,12 @@ public class DatabaseInteractor {
 
 	}
 
+	/**
+	 * Shows the user question votes table. Used for debugging.
+	 */
 	public static void showUserQuestionVotes() {
 
-		System.out.println("printing user question votes!!!\n\n\n");
+		System.out.println("Printing user question votes.\n");
 
 		Connection connection = null;
 		Statement statement = null;
@@ -1934,9 +2797,12 @@ public class DatabaseInteractor {
 
 	}
 
+	/**
+	 * Shows the user answer votes table. Used for debugging.
+	 */
 	public static void showUserAnswerVotes() {
 
-		System.out.println("printing user answer votes!!!\n\n\n");
+		System.out.println("Printing user answer votes.\n");
 
 		Connection connection = null;
 		Statement statement = null;
@@ -1975,9 +2841,12 @@ public class DatabaseInteractor {
 
 	}
 
+	/**
+	 * Shows the questions table. Used for debugging.
+	 */
 	public static void showUserTopicRanks() {
 
-		System.out.println("printing user topic ranks!!!\n\n\n");
+		System.out.println("Printing user topic ranks.\n");
 
 		Connection connection = null;
 		Statement statement = null;

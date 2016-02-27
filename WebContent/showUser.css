@@ -37,12 +37,13 @@ header {
 	height: 4em;
 }
 
-
+.bg{
+	background-color: rgba(20,86,110,0.8);
+}
 
 /*===========================================	board 	===========================================*/
 
 .user {
-	background-color: rgba(20,86,110,0.8);
 	color: #EEEEEE;
 	margin-bottom: 1rem;
 	font-size: 1.4rem;
@@ -50,6 +51,20 @@ header {
 	width: 100%;
 	min-height: 100%;
 	font-weight: bold;
+}
+
+.your-profile-picture img{
+	cursor: pointer;
+}
+
+.user-div {
+	font-weight: bold;
+	font-size: 2rem;
+	padding: 1rem;
+	width: 80%;
+	margin: auto;
+	border-radius: 4rem;
+	margin-bottom: 2rem;
 }
 
 .topic:hover {
@@ -91,6 +106,23 @@ a:focus{
 }
 
 
+
+.user-message {
+	color: #EEEEEE;
+	font-weight: bold;
+	font-size: 4rem;
+	text-align: center;
+	background-color: rgba(20,86,110,0.8);
+	padding: 1rem;
+	width: 80%;
+	margin: auto;
+	border-radius: 4rem;
+	margin-bottom: 2rem;
+}
+
+.user-message{
+	margin-top: 2rem;
+}
 
 
 .your-profile-picture img

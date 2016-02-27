@@ -12,24 +12,40 @@ import jsonClasses.User;
 import main.*;
 
 /**
- * Servlet implementation class TopUsersShowingServlet
+ * The Top Users Showing Servlet provides an API to handle a request to view the
+ * top users of the website, ordered by their rating.
+ * 
+ * @author LIAV
+ * @since 2016-02-26
+ * @see main.DatabaseInteractor
+ * @see main.StringConstants
+ * @see main.MusicityServlet
  */
 public class TopUsersShowingServlet extends MusicityServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Provides support for a GET request.
+	 * 
+	 * @param request
+	 *            The request to the server.
+	 * @param response
+	 *            The response from the server.
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 
 		// declaring the connection and the statement objects to use
 		Connection connection = null;
 
-		// getting the user name from his cookies
+		// getting the user name from the request session
 
 		String username = getUsernameFromSession(request);
 
 		if (username == null) {
 
-			ClientInteractor.sendStatus(response, 1);
+			// if the session is not valid - return a relevant status
+			ClientInteractor.sendStatus(response, 2);
 
 			return;
 
@@ -74,6 +90,10 @@ public class TopUsersShowingServlet extends MusicityServlet {
 
 	}
 
+	/**
+	 * Provides support to a POST request - sending the parameters to the super
+	 * class.
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 

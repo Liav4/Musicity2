@@ -12,10 +12,25 @@ import javax.servlet.http.HttpServletResponse;
 import jsonClasses.Answer;
 import main.*;
 
+/**
+ * The Question Answering Servlet provides an API to handle a question answering
+ * in the website.
+ * 
+ * 
+ * @author LIAV
+ * @since 2016-02-26
+ * @see main.DatabaseInteractor
+ * @see main.StringConstants
+ * @see main.MusicityServlet
+ */
 public class QuestionAnsweringServlet extends MusicityServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Provides support for a GET request - sending the parameters to the super
+	 * class.
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -23,6 +38,14 @@ public class QuestionAnsweringServlet extends MusicityServlet {
 
 	}
 
+	/**
+	 * Provides support for a POST request.
+	 * 
+	 * @param request
+	 *            The request to the server.
+	 * @param response
+	 *            The response from the server.
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 
 		// declaring the connection and the statement objects to use
@@ -33,15 +56,14 @@ public class QuestionAnsweringServlet extends MusicityServlet {
 
 		Answer answerToAdd = (Answer) fromJson(getRequestData(request), Answer.class);
 
-		System.out.println(answerToAdd.getText());
-
-		// getting the user name from his cookies
+		// getting the user name from the request session
 
 		String username = getUsernameFromSession(request);
 
 		if (username == null) {
 
-			ClientInteractor.sendStatus(response, 1);
+			// if the session is not valid - return a relevant status
+			ClientInteractor.sendStatus(response, 2);
 
 			return;
 
@@ -63,11 +85,10 @@ public class QuestionAnsweringServlet extends MusicityServlet {
 			// updating the user answers number
 			DatabaseInteractor.addUserAnswersNumber(username, statement);
 
-			System.out.println("after adding the user answers number");
-
 			// updating the question answers number
 			DatabaseInteractor.addQuestionAnswersNumber(answerToAdd.getQuestionId(), statement);
 
+			// sending a success status
 			ClientInteractor.sendStatus(response, 0);
 
 		} // handling the exceptions

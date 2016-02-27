@@ -14,19 +14,39 @@ import jsonClasses.User;
 import main.*;
 
 /**
- * Servlet implementation class LogInServlet
+ * The Log In Servlet provides an API to handle a request to log in to the
+ * server.
+ * 
+ * 
+ * @author LIAV
+ * @since 2016-02-26
+ * @see main.DatabaseInteractor
+ * @see main.StringConstants
+ * @see main.MusicityServlet
  */
 public class LogInServlet extends MusicityServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Provides support for a GET request - passing the parameters to the super
+	 * class.
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		response.getWriter().append("hello");
+		super.doGet(request, response);
 
 	}
 
+	/**
+	 * Provides support for a POST request.
+	 * 
+	 * @param request
+	 *            The request to the server.
+	 * @param response
+	 *            The response from the server.
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 
 		// declaring the connection and the statement objects to use
@@ -35,16 +55,13 @@ public class LogInServlet extends MusicityServlet {
 
 		// getting the user to log in
 
-		User userToLogIn = (User) fromJson(request.getParameter(StringConstants.JSON_STRING_PARAMETER_NAME),
-				User.class);
+		User userToLogIn = (User) fromJson(getRequestData(request), User.class);
 
-		// setting the cookie that is sent to the client
+		// setting the name of that user to the user name attribute of the
+		// request session
 
 		HttpSession newSession = request.getSession();
 		newSession.setAttribute(StringConstants.ATTRIBUTE_USERNAME_NAME, userToLogIn.getName());
-		
-		System.out.println("after adding the cookie\n");
-		System.out.println(userToLogIn);
 
 		try {
 
@@ -52,25 +69,30 @@ public class LogInServlet extends MusicityServlet {
 			connection = DatabaseInteractor.getConnection();
 			statement = connection.createStatement();
 
-			// checking if the user exists
-			if (DatabaseInteractor.doesExistIn(userToLogIn.getName(), StringConstants.USERS_TABLE, statement) &&
-					DatabaseInteractor.doesMatchPassword(userToLogIn, statement)) {
+			// checking if the user exists and matches his password in the users
+			// table
+			if (DatabaseInteractor.doesExistIn(userToLogIn.getName(), StringConstants.USERS_TABLE, statement)
+					&& DatabaseInteractor.doesMatchPassword(userToLogIn, statement)) {
 
-				System.out.println("sending an OK status");
-					
-				// if the user exists and matches the password, send an OK status
-				ClientInteractor.sendStatus(response, 0);
-				
+				// if the user exists and matches the password, send a success
+				// status with the user nickname for displaying in the client
+
+				String dataToSend = String.format(" { \"status\": %d, \"nickname\": \"%s\", \"imageURL\": \"%s\" } ", 0,
+						DatabaseInteractor.getColumnFromKey(StringConstants.USER_NICKNAME, StringConstants.USERNAME,
+								userToLogIn.getName(), StringConstants.USERS_TABLE, statement),
+						DatabaseInteractor.getColumnFromKey(StringConstants.USER_IMAGE_URL, StringConstants.USERNAME,
+								userToLogIn.getName(), StringConstants.USERS_TABLE, statement));
+
+				System.out.println(dataToSend);
+
+				ClientInteractor.sendData(response, dataToSend);
+
 			} else {
-				
-				System.out.println("sending a WRONG status");
 
-				// the user doesn't exist, send a WRONG status
-				ClientInteractor.sendStatus(response, 1);
+				// the user doesn't exist, send a failure status
+				ClientInteractor.sendData(response, " { \"status\": 1 }");
 
 			}
-			
-			System.out.println("after all the checks");
 
 		} // handling the exceptions
 		catch (SQLException exception) {
@@ -79,7 +101,7 @@ public class LogInServlet extends MusicityServlet {
 			exception.printStackTrace();
 
 			// notify the client about an exception
-			ClientInteractor.sendStatus(response, 2);
+			ClientInteractor.sendStatus(response, 3);
 
 		} catch (ClassNotFoundException exception) {
 
@@ -87,7 +109,7 @@ public class LogInServlet extends MusicityServlet {
 			exception.printStackTrace();
 
 			// notify the client about an exception
-			ClientInteractor.sendStatus(response, 2);
+			ClientInteractor.sendStatus(response, 3);
 
 		} // releasing the resources
 		finally {

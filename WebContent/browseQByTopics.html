@@ -19,24 +19,33 @@
 </head>
 <body ng-controller="listTopics">
 	<header>
-		<div>
-			<!-- the logo image of the website -->
-			<img class="logo" src="deps/img/musicity-logo-white.png" alt="Musicity logo">
-			<h1>Top Topics</h1>
+				<div>
+			<div class = "container-fluid">
+				<!-- the logo image of the website -->
+				<a href = "welcomePage.html" >
+					<img class="logo" src="deps/img/musicity-logo-white.png" alt="Musicity logo"> 
+				</a>
+				<span class="log-out-nav">
+					<ul class="nav navbar-nav navbar-right">
+						<li ng-click="showUserSummary(currentUsername)">
+							<a href="#">
+						    	<img class = "User-picture" alt = "{{currentUserNickname}}'s picture" src = "{{imageURL}}"/>
+						    </a>
+					    </li>
+					    <li ng-click="showUserSummary(currentUsername)"><a href="#">{{currentUserNickname}}</a></li>
+					    <li ng-click = "handleLogOut()"><a href="#"><span class="glyphicon glyphicon-log-out"></span>Log out</a></li>
+					</ul>
+				</span>
+			</div>
+			<div>
+				<h1>Top Topics</h1>
+			</div>
 		</div>
 	</header>
 	<!-- Responsive Navbar -->
 
 	<nav role="navigation" class="navbar navbar-default">
 	  <div class="container">
-	    <div class="navbar-header">
-	      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-	        <span class="icon-bar"></span>
-	        <span class="icon-bar"></span>
-	        <span class="icon-bar"></span>
-	      </button>
-	      <a class="navbar-brand" href="index.html">Musicity</a>
-	    </div>
 	    <div class="navbar-collapse collapse">
 	      <ul class="nav navbar-nav">
 	        <li><a href="welcomePage.html">Home</a></li>
@@ -53,12 +62,33 @@
 	    </div><!--/.nav-collapse -->
 	  </div><!--/.container -->
 	</nav>
+	
+	<div class = "paging" >
+		<button type="button" class="btn" ng-hide = "thisPage == 1"   ng-click="handlePrevPage()">
+			<span class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span>
+		</button>
+		<span>{{thisPage}}</span>
+		<button type="button"  class="btn" ng-hide = "isLastPage == 1" ng-click="handleNextPage()">
+			<span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
+		</button>
+	</div>
+	
+	<p class = "topics-message" ng-show = "topTopics.length == 0" >
+		There are no topics to show
+	</p>
+	
+	<p class = "topics-message" ng-show = "topTopics.length > 1" >
+		Top {{(thisPage - 1) * 20 + 1}} to {{(thisPage * 20) - (20 - topTopics.length)}} topics
+	</p>
 
+	<p class = "topics-message" ng-show = "topTopics.length == 1" >
+		The top {{(thisPage - 1) * 20 + 1}} topic
+	</p>
 
-	<ol class="container tTopics">
+	<ul class="container tTopics">
 		
 		<li class="row topic" ng-repeat="topic in topTopics" ng-click = "handleTopicClick(topic)" >
-			<div href="topic_{{topic.name}}.html" >
+			<div >
 				<div class="col-md-12">
 					{{topic.name}}
 				</div>
@@ -69,16 +99,14 @@
 			</div>
 		</li>
 	
-	</ol>
-	<div class = "pagging" >
+	</ul>
+	<div class = "paging" >
 		<button type="button" class="btn" ng-hide = "thisPage == 1"   ng-click="handlePrevPage()">
 			<span class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span>
 		</button>
 		<span>{{thisPage}}</span>
 		<button type="button"  class="btn" ng-hide = "isLastPage == 1" ng-click="handleNextPage()">
 			<span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
-		</button>
-	</div>
 		</button>
 	</div>
 </body>

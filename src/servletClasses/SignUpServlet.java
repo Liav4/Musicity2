@@ -14,12 +14,24 @@ import jsonClasses.User;
 import main.*;
 
 /**
- * Servlet implementation class SignUpServlet
+ * The Sign Up Servlet provides an API for inserting a user to the database at
+ * sign up.
+ * 
+ * 
+ * @author LIAV
+ * @since 2016-02-26
+ * @see main.DatabaseInteractor
+ * @see main.StringConstants
+ * @see main.MusicityServlet
  */
 public class SignUpServlet extends MusicityServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Provides support for a GET request - sending the parameters to the super
+	 * class.
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -27,30 +39,29 @@ public class SignUpServlet extends MusicityServlet {
 
 	}
 
+	/**
+	 * Provides support for a POST request.
+	 * 
+	 * @param request
+	 *            The request to the server.
+	 * @param response
+	 *            The response from the server.
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 
 		// declaring the connection and the statement objects to use
 		Connection connection = null;
 		Statement statement = null;
 
-		System.out.println("in post method");
-
 		// getting the user to sign up
-
-		System.out.println(StringConstants.JSON_STRING_PARAMETER_NAME);
-
-		System.out.println(request.getParameter(StringConstants.JSON_STRING_PARAMETER_NAME));
-
-		User userToSignUp = (User) fromJson(request.getParameter(StringConstants.JSON_STRING_PARAMETER_NAME),
-				User.class);
-
-		// setting the cookie that is sent to the client
+		
+		User userToSignUp = (User) fromJson(getRequestData(request), User.class);
+		
+		// setting the user name to the attribute of the request session
 
 		HttpSession newSession = request.getSession();
-		newSession.setAttribute(StringConstants.ATTRIBUTE_USERNAME_NAME, userToSignUp.getName());
 
-		// checking the assignments
-		System.out.println(userToSignUp);
+		newSession.setAttribute(StringConstants.ATTRIBUTE_USERNAME_NAME, userToSignUp.getName());
 
 		try {
 
@@ -58,50 +69,28 @@ public class SignUpServlet extends MusicityServlet {
 			connection = DatabaseInteractor.getConnection();
 			statement = connection.createStatement();
 
-			// creating the users table, the open sessions table and the
-			// user topic ranks table, if they don't already exist
-
-			System.out.println(StringConstants.CREATE_USERS_TABLE);
-
-			System.out.println("1");
-			DatabaseInteractor.createTable(StringConstants.USERS_TABLE, statement);
-			DatabaseInteractor.createTable(StringConstants.USER_TOPIC_RANKS_TABLE, statement);
-			DatabaseInteractor.createTable(StringConstants.TOPICS_TABLE, statement);
-			System.out.println("4");
-
 			// inserting the user
 
 			// checking if the user exists
 			if (DatabaseInteractor.doesExistIn(userToSignUp.getName(), StringConstants.USERS_TABLE, statement)) {
 
-				System.out.println("exists");
-
-				// if the user already exists, notify the client
+				// if the user already exists, notify the client about a failue
 				ClientInteractor.sendStatus(response, 1);
 
 			} else {
 
-				System.out.println("doesn't exist");
-
-				// inserting the user to the table, opening a session (or
-				// updating one), adding all the user-topic pairs, and
-				// notifying the client
+				// inserting the user to the table and adding all the user-topic
+				// pairs, and notifying the client
 				DatabaseInteractor.insertInto(StringConstants.USERS_TABLE, connection, userToSignUp.getName(),
 						userToSignUp.getPassword(), userToSignUp.getNickname(), userToSignUp.getImage(),
 						userToSignUp.getDescription());
 
-				System.out.println("user " + userToSignUp.getName() + " was added.");
-
 				DatabaseInteractor.addUserTopicPairs(userToSignUp, connection, statement);
 
-				System.out.println("user topics were added.");
-
+				// sending a success status
 				ClientInteractor.sendStatus(response, 0);
 
 			}
-
-			// last of all - show the users table
-			DatabaseInteractor.showTable(StringConstants.USERS_TABLE, statement);
 
 			try {
 

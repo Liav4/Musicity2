@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app = "enterApp">
 	<head>
 		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
 		<title>Musicity - Log In or Sign Up</title>
-		<script src="main.js"></script>
+		
 		<script src="jquery/jquery-1.12.0.min.js"></script>
 		<script src="angularJS/angular.min.js"></script>
-		<script src="browseExistingQ.js"></script>
+		<script src="main.js"></script>
 		<!-- Latest compiled JavaScript -->
-		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
 
 		<link rel="stylesheet" type="text/css" href="main.css">
 	</head>
-	<body>
+	<body ng-controller = "enteringController">
 		<header>
 			<div>
 				<!-- the logo image of the website -->
@@ -21,28 +21,34 @@
 				<h1>Welcome to Musicity CQA Site</h1>
 			</div>
 			<!-- a form to fill the log in information -->
-			<form class="log-in" onsubmit="return handleLogInForm()">
-				<!-- using a hidden input to figure out what does the doPost method need to do-->
-				<input  type="hidden" name="hidden-input" value="1" />
+			<form class="log-in" ng-submit="sendLogInForm()">
 				<!-- a field to enter the username -->
-				<label  for="Username">Username: </label>
-				<input  class="input-t2" id="log-in_Username" type="text" name="log-in_username" placeholder="Username">
+				<label class="login-label" for="Username">Username: </label>
+				<input  class="input-t2" ng-model="logInUsername" id="log-in_Username" type="text" name="log-in_username" placeholder="Username">
 				<!-- a field to enter the password -->
-				<label for="Password">Password: </label>
-				<input class="input-t2" id="log-in_Password" type="password" name="log-in_password" placeholder="password">
+				<label class="login-label" for="Password">Password: </label>
+				<input ng-model="logInPassword" class="input-t2" id="log-in_Password" type="password" name="log-in_password" placeholder="password">
 				<!-- the log in button -->
-				<input id="log-in-button"  type="submit" value="Log In">			
+				<div class = "log-in-button-div">
+					<input id="log-in-button"  type="submit" value="Log In">
+				</div>			
 			</form>
-			<!-- error message - log in with invalid paramaters-->
-			<p class="error1">
-				Sorry, you entered invald combination of username & password.
+			
+			<!-- error message - a special character found in the username field -->
+			<p class="error1" ng-show = "errorCode == 11">
+				Please use only letters and digits.
+			</p>
+			
+			<!-- error message - log in with invalid parameters-->
+			<p class="error1" ng-show = "errorCode == 12">
+				Sorry, you entered an invalid combination of username & password.
 			</p>
 		</header>
 
 		<section class="sign-up">
 			<h2 class="sign-up-title">Sign Up</h2>
 			<!-- a form to enter the sign up information -->
-			<form name="sign-up_form" onsubmit="return handleSignUpForm()">
+			<form name="sign-up_form" ng-submit = "sendSignUpForm()">
 				<!-- using a hidden input to figure out what does the doPost method need to do-->
 				<input type="hidden" name="hidden-input" value="2" />
 				<div>
@@ -51,15 +57,25 @@
 					<!-- a field to enter the username -->
 					<label class="u-hide" for="Username">Username: </label>
 				
-					<input ng-model="user.name" required class="input-t1" id="Username" type="text" placeholder="Username (up to 10 characters)" name="sign-up_username">
+					<input ng-model="signUpUsername" class="input-t1" id="Username" type="text" placeholder="Username (up to 10 characters)" name="sign-up_username">
 
+					<!-- error message - the username field is required -->
+					<p class="error1" ng-show = "errorCode == 8">
+						The username field is required.
+					</p>
 
-					<!-- error message - sign up with invalid paramaters-->
-					<p class="error1" id="s_username_l_error">
-						Please enter up to 10 character username.
+					<!-- error message - a special character found in the username field -->
+					<p class="error1" ng-show = "errorCode == 1">
+						Please use only letters and digits.
+					</p>
 
-					<!-- error message - sign up with exisiting paramaters-->
-					<p class="error1" id="error2">
+					<!-- error message - sign up with invalid parameters-->
+					<p class="error1" ng-show = "errorCode == 2">
+						You can NOT enter more than 10 characters of username.
+					</p>
+
+					<!-- error message - sign up with exisiting parameters-->
+					<p class="error1" ng-show = "errorCode == 7">
 						Sorry, the username you entered belongs to an existing account.
 					</p>
 
@@ -67,22 +83,32 @@
 				<div>
 					<!-- a field to enter the password -->
 					<label class="u-hide" for="Password">Password: </label>
-					<input ng-model="user.name" required class="input-t1" id="Password" type="password" placeholder="Password (up to 8 characters)" name="sign-up_password">
+					<input ng-model="signUpPassword" class="input-t1" id="Password" type="password" placeholder="Password (up to 8 characters)" name="sign-up_password">
 
-					<!-- error message - sign up with invalid paramaters-->
-					<p class="error1" id="s_password_l_error">
-						Please enter up to 8 characters password.
+					<!-- error message - the password field is required -->
+					<p class="error1" ng-show = "errorCode == 9">
+						The password field is required.
+					</p>
+
+					<!-- error message - sign up with invalid parameters-->
+					<p class="error1" ng-show = "errorCode == 3">
+						You can NOT enter more than 8 characters of password.
 					</p>
 				</div>
 				<div>
 					<!-- a field to enter the user nickname -->
 					<label class="u-hide" for="User-Nickname">User Nickname: </label>
 				
-					<input class="input-t1" id="User-Nickname" type="text" placeholder="User Nickname (up to 20 characters)" name="sign-up_user-nickname">
+					<input ng-model="signUpNickname" class="input-t1" id="User-Nickname" type="text" placeholder="User Nickname (up to 20 characters)" name="sign-up_user-nickname">
 
-					<!-- error message - sign up with invalid paramaters-->
-					<p class="error1" id="s_nickname_l_error">
-						Please enter up to 20 characters user nickname.
+					<!-- error message - the nickname field is required -->
+					<p class="error1" ng-show = "errorCode == 10">
+						The nickname field is required.
+					</p>
+
+					<!-- error message - sign up with invalid parameters-->
+					<p class="error1" ng-show = "errorCode == 4">
+						You can NOT enter more than 20 characters of nickname.
 					</p>
 
 				</div>
@@ -90,74 +116,48 @@
 					<div class="u-disp-inline-b profile-pic-div">
 						<!-- a field to enter the user photo's url -->
 						<label class="u-hide" for="Profile-Picture">Photo (optional): </label>
-						<input class="input-t1" id="Profile-Picture" type="text" placeholder="Photo URL (optional)" name="sign-up_user-photo-url" onchange="updateProfilePic(this.value)">
+						<input ng-model="signUpImage" class="input-t1" id="Profile-Picture" type="text" placeholder="Photo URL (optional)" name="sign-up_user-photo-url" ng-change = "updateProfilePic()">
 						<!-- a space where the photo will be presented -->
 						<div class="your-profile-picture">
-							<img id="profilePic" src="deps/img/default_profile_pic.jpg">
+							<img alt = "User picture" id="profilePic" src={{imageSource}}>
 						</div>
 					</div>
 					<div class="u-disp-inline-b text-area-div">
 						<!-- a field to enter the short description of the user -->
 						<label class="u-hide" for="Short-Description">Short Description (optional): </label>
-						<textarea id="Short-Description" placeholder="Short Description... (up to 50 words, optional)"
+						<textarea ng-model="signUpdescription" id="Short-Description" placeholder="Short Description... (up to 50 characters, optional)"
 						name="sign-up_short-description"></textarea>
-						</div>
+					</div>
 
-					<!-- error message - sign up with invalid paramaters-->
-					<p class="error1" id="s_url_l_error">
-						Your URL is too long.
+					<!-- error message - sign up with invalid parameters-->
+					<p class="error1" ng-show = "errorCode == 5">
+						You can NOT enter more than 5000 characters of URL.
 					</p>
 
-					<!-- error message - sign up with invalid paramaters-->
-					<p class="error1" id="s_descr_l_error">
-						You can NOT enter more than 50 words of description.
+					<!-- error message - sign up with invalid parameters-->
+					<p class="error1" ng-show = "errorCode == 6">
+						You can NOT enter more than 50 characters of description.
 					</p>
 
 					<div>
 						<!-- a button to submit the sign up information -->
-						<input class = ""  type="submit" value="Submit">
+						<input class = "submitSignUpForm"  type="submit" value="Submit">
 					</div>
 				</div>
 			</form>
 
-			<!-- error message - sign up with invalid paramaters-->
-			<p class="error1" id="error3">
-				Please enter up to 10 character username, up to 8 characters password and up to 20 characters user nickname.
-			</p>
-
 			<!-- registeration success message-->
-			<div class="u-hide" id="registeration-success-message">
-				<h2>
-					Congratulations! 
-				</h2>
+			<div class = "success-message" ng-show = "errorCode == 20">
 				<p>
-					you have been sucessfully Registered
+					You Have Been Sucessfully Registered...
 				</p>
 			</div>
 		</section>
-		<!--
-		<section>
-			<!-- 3 paragraphs summing the essence of this CQA website 
+		<section class = "information">
+			<!-- 3 paragraphs summing the essence of this CQA website -->
 			<p>Mucisity is a CQA (Community Question-Answering) site for musicians or music fans of all kinds.</p>
 			<p>In this site you can find questions and answers of all topics involving music, such as: topics about marketing and price checks of musical instruments, songs lyrics' queries, musical notes queries, any musical instrument lessons, and more...</p>
-			<p>We encourage you to sign up and be a part of our music lover community, and help each other learn more about music everyday.</p>
-			<!-- a footer for links about information associates with us and the website 
+			<p>We encourage you to sign up and be a part of our music lover community, and help each other learn more about 
 		</section>
-		<footer>
-			<ul>
-				<li>Help</li>
-				<li>About us</li>
-				<li>Contact Us</li>
-				<li>Feedback</li>
-			</ul>
-			<div class="copyright">
-					<div class="copyright-bottom">
-						<ul>
-							<li>Copyright © 2016 Musicity, Inc.</li>
-							<li>Privacy Policy</li>
-						</ul>
-					</div>
-				</div>
-		</footer> -->
 	</body>
 </html>

@@ -12,29 +12,46 @@ import jsonClasses.Question;
 import main.*;
 
 /**
- * Servlet implementation class QuestionsByTopicsShowingServlet
+ * The Questions By Topic Showing Servlet provides an API to handle a request to
+ * view questions associated with a given topic, which were submitted on the
+ * website.
+ * 
+ * @author LIAV
+ * @since 2016-02-26
+ * @see main.DatabaseInteractor
+ * @see main.StringConstants
+ * @see main.MusicityServlet
  */
 public class QuestionsByTopicsShowingServlet extends MusicityServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Provides support for a GET request.
+	 * 
+	 * @param request
+	 *            The request to the server.
+	 * @param response
+	 *            The response from the server.
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-
-		// declaring the connection and the statement objects to use
+		
+		// declaring the connection object to be used
 		Connection connection = null;
 
 		// getting the topic name and the page number from the request
 
 		int pageNumber = Integer.parseInt(request.getParameter(StringConstants.PAGE_NUMBER));
-		String topicName = request.getParameter("topicName");
+		String topicName = request.getParameter(StringConstants.TOPIC_NAME_PARAMETER);
 
-		// getting the user name from his cookies
+		// getting the user name from the request session
 
 		String username = getUsernameFromSession(request);
 
 		if (username == null) {
 
-			ClientInteractor.sendStatus(response, 1);
+			// if the session is not valid - return a relevant status
+			ClientInteractor.sendStatus(response, 2);
 
 			return;
 
@@ -49,6 +66,7 @@ public class QuestionsByTopicsShowingServlet extends MusicityServlet {
 			Question[] topQuestionsByTopic = DatabaseInteractor.getTopQuestionsByTopic(topicName, pageNumber, username,
 					connection, response);
 
+			// sending the finishing of the JSON formatted string to the client
 			ClientInteractor.sendData(response, toJson(topQuestionsByTopic) + " }");
 
 		} // handling the exceptions
@@ -79,6 +97,10 @@ public class QuestionsByTopicsShowingServlet extends MusicityServlet {
 
 	}
 
+	/**
+	 * Provides support for a POST request - sending the parameters to the super
+	 * class.
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 

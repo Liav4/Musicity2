@@ -11,13 +11,13 @@ body {
 header h1 {
 	text-align: center;
 	margin-top: -0.4em;
-	font-size: 3em;
+	font-size: 3rem;
 	font-weight: normal;
 	color: white;
 }
 
 .log-in {
-	margin-left: 22%;
+	margin-left: 18%;
 }
 
 
@@ -57,6 +57,9 @@ header {
 	height: 4em;
 }
 
+.log-in-button-div {
+		display: inline;
+}
 
 
 /*===========================================	Sign-up section 	===========================================*/
@@ -88,10 +91,13 @@ textarea {
 
 
 .input-t1{
-	width: 22%;
+	width: 30%;
 	margin-bottom: 1rem;
 }
 
+.input-t2{
+	width: 25%;
+}
 
 
 header .error1{
@@ -100,11 +106,7 @@ header .error1{
 }
 
 
-.error1{
-	
-	display: inline-block;
-	display: none;
-}
+
 
 .error1{
 	border: solid red;
@@ -112,8 +114,25 @@ header .error1{
 	width: 40%;
 	background-color: #F76060;
 	margin: auto;
+	margin-bottom: 1rem;
 }
 
+header .error1 {
+	margin-bottom: 0;
+	margin-top: 1rem;
+}
+
+.success-message {
+	border: solid #4daaca;
+	border-width: 0.2em;
+	width: 40%;
+	background: linear-gradient(to left,#006699,#4daaca,#006699);
+	margin: auto;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	color: #EEEEEE;
+	font-weight: 900;
+}
 
 .your-profile-picture img
 {
@@ -140,7 +159,162 @@ header .error1{
 }
 
 
-/*===========================================	footer 	===========================================*/
+/*===========================================	information section ===========================================*/
+
+.information {
+	font-size: 1.3rem;
+}
+
+
+
+/************************************************mobile version style************************8*/
+
+@media screen and (max-width: 850px) {
+	
+	.input-t1{
+		width: 50%;
+	}
+	
+	.profile-pic-div input{
+		width: 60%;
+	}
+
+	header h1 {
+		font-size: 2.8rem;
+	}
+
+	html {
+		font-size: 90%;
+	}
+
+	.profile-pic-div {
+		left: 5%;
+	}
+	
+		
+}
+
+
+@media screen and (max-width: 720px) {
+	
+
+
+	html {
+		font-size: 85%;
+	}
+
+	header h1 {
+		font-size: 2.5rem;
+	}
+
+	.input-t1{
+		width: 70%;
+	}
+
+	.input-t2{
+		margin-left: 1.5rem;	
+		width: 35%;
+	}
+
+	#log-in_Username::-webkit-input-placeholder,
+	#log-in_Password::-webkit-input-placeholder
+	{
+	    visibility: visible;
+	}
+	
+	.profile-pic-div input{
+		width: 70%;
+	}
+
+	.login-label {
+		display: none;
+	}
+		
+}
+
+
+@media screen and (max-width: 650px) {
+	
+
+
+	html {
+		font-size: 80%;
+	}
+
+	header h1 {
+		font-size: 1.5rem;
+	}
+
+	.log-in{
+		margin-left: 0;
+	}
+
+	.input-t1,
+	.error1,
+	.profile-pic-div,
+	.text-area-div {
+		width: 99%;
+		margin: auto;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		display: block;
+	}
+
+	.input-t2{
+		width: 80%;
+		margin: auto;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		display: block;
+	}
+
+	#log-in_Username::-webkit-input-placeholder,
+	#log-in_Password::-webkit-input-placeholder
+	{
+	    visibility: visible;
+	}
+	
+	.profile-pic-div input{
+		width: 99%;
+		margin: auto;
+		display: block;
+	}
+
+	header .error1 {
+	    margin-left: 0;
+	    width: 80%;
+		margin: auto;
+		margin-top: 1em;
+		display: block;
+	}
+
+
+	.profile-pic-div {
+		position: inherit;
+	}
+
+	.profile-pic-div .input-t1{
+		margin-bottom: 1em;
+	}
+
+	.log-in-button-div {
+		width: 35%;
+		display: block;	
+		margin: auto;
+	}
+
+	#log-in-button {
+    	margin-left: 0;
+    	width: 100%;
+	}
+	
+	.submitSignUpForm {
+		width: 35%;
+		display: block;	
+		margin: auto;
+	}
+		
+}
 
 
 

@@ -13,12 +13,27 @@ import jsonClasses.Topic;
 import main.*;
 
 /**
- * Servlet implementation class TopTopicsShowingServlet
+ * The Top Topics Showing Servlet provides an API to handle a request to view
+ * the top topics of the website, ordered by their popularity.
+ * 
+ * @author LIAV
+ * @since 2016-02-26
+ * @see main.DatabaseInteractor
+ * @see main.StringConstants
+ * @see main.MusicityServlet
  */
 public class TopTopicsShowingServlet extends MusicityServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Provides support for a GET request.
+	 * 
+	 * @param request
+	 *            The request to the server.
+	 * @param response
+	 *            The response from the server.
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 
 		// declaring the connection and the statement objects to use
@@ -37,11 +52,12 @@ public class TopTopicsShowingServlet extends MusicityServlet {
 
 			// getting the top topics
 			Topic[] topics = DatabaseInteractor.getTopTopics(pageNumber, statement, response);
-			
+
+			// sending the finishing of the JSON formatted string to the client.
 			String dataToSend = toJson(topics) + " }";
-			
+
 			ClientInteractor.sendData(response, dataToSend);
-			
+
 		} // handling the exceptions
 		catch (SQLException exception) {
 			System.err.println(StringConstants.DATABASE_QUERIES_ERROR);

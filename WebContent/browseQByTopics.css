@@ -9,6 +9,50 @@ body {
 
 /*===========================================	header 	===========================================*/
 
+.log-out-nav a{
+	color: #EEEEEE;
+}
+.log-out-nav *:hover{
+	background-color: transparent !important;
+}
+
+.log-out-nav li:nth-child(2):hover,
+.log-out-nav li:nth-child(3):hover,
+.log-out-nav img:hover {
+	border: solid black;
+
+}
+
+.log-out-nav li:first-child {
+	height: 50px;
+    width: 50px;
+    margin-right: 1rem;
+	
+}
+
+.log-out-nav a{
+	color: #EEEEEE;
+	padding: 0 !important;
+	margin-top: 1rem;
+	margin-right: 1em;
+}
+
+
+.log-out-nav *:focus{
+	background-color: transparent !important;
+	
+}
+
+header h1{
+	margin:auto !important;
+}
+
+.User-picture{
+	width: 50px;
+	height: 50px;
+}
+
+
 *:focus {
 	outline: inherit; 
 }
@@ -75,6 +119,11 @@ a:focus{
 }
 
 .tTopics li {
+    padding: 1rem;
+}
+
+/*
+.tTopics li {
     counter-increment: step-counter;
 }
 
@@ -86,8 +135,21 @@ a:focus{
     font-weight: 900;
     padding: 3px 8px;
     border-radius: 3px;
-}
+}*/
 
+
+.topics-message {
+	color: #EEEEEE;
+	font-weight: bold;
+	font-size: 4rem;
+	text-align: center;
+	background-color: rgba(20,86,110,0.8);
+	padding: 1rem;
+	width: 80%;
+	margin: auto;
+	border-radius: 4rem;
+	margin-bottom: 2rem;
+}
 
 
 
@@ -97,4 +159,21 @@ a:focus{
 	height: 50px;
 }
 
-W
+.paging{
+	width: 15rem;;
+	margin: auto;
+	text-align: center;
+	color: white;
+	font-weight: 900;
+	background-color: rgb(20,86,110);
+	border-radius: 3rem;
+	margin-bottom: 1rem;
+}
+
+.paging button:hover{
+	background-color: #2266DD;
+}
+
+button{
+	background-color: transparent;
+}
